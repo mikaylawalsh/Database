@@ -155,9 +155,9 @@ void *run_client(void *arg) {
     //push thread_cleanup to remove it if the thread is canceled?
 
     while(1) {
-        // char *response;
-        // char *command;
-        if (comm_serve(c->cxstr, char *response, char *command) == -1) {
+        char *response;
+        char *command;
+        if (comm_serve(c->cxstr, response, command) == -1) {
             break;
         }
         interpret_command(command, response, strlen(response));
