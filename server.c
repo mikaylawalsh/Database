@@ -93,10 +93,12 @@ void client_constructor(FILE *cxstr) {
     // to the input argument.
     // Step 2: Create the new client thread running the run_client routine.
     // Step 3: Detach the new client thread
-    if ((client_t *c = (client_t *) malloc(sizeof(client_t))) == NULL) {
+    client_t *c;
+    if ((c = (client_t *) malloc(sizeof(client_t))) == NULL) {
         printf("malloc error");
     } 
     
+    int err;
     if ((err = pthread_create(&c->thread, 0, run_client, c)) != 0) { //what goes in here
         handle_error_en(err, "pthread create");
     }
@@ -114,17 +116,17 @@ void client_destructor(client_t *client) {
     // Whatever was malloc'd in client_constructor should
     // be freed here!
 
-    comm_shutdown(c->cxstr)
+    comm_shutdown(client->cxstr);
 
     //is this necessary? might cause segfault. 
-    client_t *prev = c->prev;
-    client_t *next = c->next;
+    client_t *prev = client->prev;
+    client_t *next = client->next;
     next->prev = prev;
     prev->next = next;
-    c->prev = NULL;
-    c->next = NULL;
+    client->prev = NULL;
+    client->next = NULL;
 
-    free(c);
+    free(client);
 }
 
 // Code executed by a client thread
@@ -225,14 +227,14 @@ int main(int argc, char *argv[]) {
     //     //error check
     // }
     
-    
+
     //create client thread??
 
     if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
         printf("sig_ign error");
     }
 
-    start_listener(argv[1], client_constructor); //correct??
+    start_listener(atoi(argv[1]), client_constructor); //correct??
 
     //delete database when num of clients is 0??
 
