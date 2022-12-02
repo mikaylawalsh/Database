@@ -1,13 +1,36 @@
 Questions
 
-1. Consider the thread created in start_listener. How many threads with this functionality should be running on the server at any given time?
+1. Consider the thread created in start_listener. How many threads with this functionality should be 
+running on the server at any given time?
 
-2. In the listener function, what do each of the following fields of the sockaddr_in struct represent: sin_family, sin_port, and sin_addr.s_addr?
+There will be one thread with the functionality. There only needs to be one listening socket in order to connect clients to the server. 
 
-3. What is the purpose of each of the following function calls in listener: socket, bind, listen, and accept? You should explain what each call does and what the effect would be if it were not called.
 
-4. Which protocol (TCP or UDP) is used for communication? Why is this protocol used? (Hint: see line 37 in comm.c)
+2. In the listener function, what do each of the following fields of the sockaddr_in struct represent: 
+sin_family, sin_port, and sin_addr.s_addr?
 
-5. Describe what comm_serve does. How are the response and command parameters used? What would happen if the stream pointed to by cxstr were closed?
+In the sockaddr_in struct, sin_family represents the address family, which in this case is set to AF_INET, sin_port represents the port number which is passed into start_listener, sin_addr represents the IP address in the socket, and the .s_addr addition to sin_addr specifies that it is one 4-byte integer. 
 
-6. Describe, in detail, what happens during each iteration of the while loop in the listener function. Be sure to include explanations of all significant function calls.
+
+3. What is the purpose of each of the following function calls in listener: socket, bind, listen, and 
+accept? You should explain what each call does and what the effect would be if it were not called. 
+
+The function call to socket creats a socket with the specified attributes that passed in. If socket were not called, we would not have a socket to connect the server and client. The function call to bind takes in socket file descriptor, socket address, and size of socket. From this it binds the socket specified by the file descriptor to the address passed in. If this were not called, we would not have an address to reference the socket by. The function call to listen puts the socket in listening mode, meaning it is marked as a passive socket that is used for incoming connection requests. If it were not called, the server would not be able to know when a client connects to it. The function call to accept accepts the connection request at the top of the queue of pending connections and creates a new connected socket. When accept is called, it either accepts the request at the top of the queue or waits for something to be added to the queue. If this were not called, we would not be able to connect a server to a client.
+
+
+4. Which protocol (TCP or UDP) is used for communication? Why is this protocol used? (Hint: see line 37 in 
+comm.c)
+
+TCP is used for communication. We can see this on line 37 since SOCK_STREAM is passed into socket. This protocol is used because it ensure secure transmission of information between client and server.
+
+
+5. Describe what comm_serve does. How are the response and command parameters used? What would happen if 
+the stream pointed to by cxstr were closed? 
+
+The function comm_serve essentially is a way to send messages between server and client. The first part of the function is checking if there is respose and, if so, it is put into the buffer and then flushed to the file passed in. The second part of the function is retrieving a message from the client that is in the file. Response is used when we are writing to the file and command is used when we are reading from the file. If the stream pointed to by cxstr were closed, the function would not be able to read or write to the file, making it impossible for the client and server to communicate. 
+
+
+6. Describe, in detail, what happens during each iteration of the while loop in the listener function. Be 
+sure to include explanations of all significant function calls. 
+
+In each iteration of the while loop, there is first a call to accept which will either pull the first request off of the queue and make a connetion or wait for a request to be made if the queue is empty. Next, a message will be printed saying a client has been connected. This print statment uses inet_ntoa, which converts an internet host address to a string. There is then a call to fdopen which will open a file descriptor between the itself and the client. Lastly, this file descriptor is passed on to the server through the server function that is passed into listener. Having this while loop allows us to keep the listener on at all times to look for join requests while processing the current requests. 

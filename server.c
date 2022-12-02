@@ -87,18 +87,44 @@ void client_constructor(FILE *cxstr) {
     // You should create a new client_t struct here and initialize ALL
     // of its fields. Remember that these initializations should be
     // error-checked.
-    //
+
     // TODO:
     // Step 1: Allocate memory for a new client and set its connection stream
     // to the input argument.
     // Step 2: Create the new client thread running the run_client routine.
-    // Step 3: Detach the new client thread 
+    // Step 3: Detach the new client thread
+    if ((client_t *c = (client_t *) malloc(sizeof(client_t))) == NULL) {
+        printf("malloc error");
+    } 
+    
+    if ((err = pthread_create(&c->thread, 0, run_client, c)) != 0) { //what goes in here
+        handle_error_en(err, "pthread create");
+    }
+    c->cxstr = cxstr; //do i need to open this 
+    c->prev = NULL;
+    c->next = NULL;
+
+    if ((err = pthread_detatch(c->thread)) != 0) {
+        handle_error_en(err, "pthread create");    
+    }
 }
 
 void client_destructor(client_t *client) {
     // TODO: Free and close all resources associated with a client.
     // Whatever was malloc'd in client_constructor should
     // be freed here!
+
+    comm_shutdown(c->cxstr)
+
+    //is this necessary? might cause segfault. 
+    client_t *prev = c->prev;
+    client_t *next = c->next;
+    next->prev = prev;
+    prev->next = next;
+    c->prev = NULL;
+    c->next = NULL;
+
+    free(c);
 }
 
 // Code executed by a client thread
@@ -114,7 +140,30 @@ void *run_client(void *arg) {
     //       cleanly.
     //
     // You will need to modify this when implementing functionality for stop and go!
-    return NULL;
+
+    //make sure server is still accepting clients? 
+
+    client_t *c = (client_t *) arg;
+
+    //not sure if this is correct
+    thread_list_head->prev = c;
+    c->next = thread_list_head;
+    c = thread_list_head;
+
+    //push thread_cleanup to remove it if the thread is canceled?
+
+    char *response;
+    char *command;
+    while(1) {
+        if (comm_serve(c->cxstr, response, command) == -1) {
+            break;
+        }
+        interpret_command(command, response, strlen(response));
+    }
+
+    client_destructor(c);
+
+    return c; //what to return 
 }
 
 void delete_all() {
@@ -169,6 +218,23 @@ int main(int argc, char *argv[]) {
     // happens in a call to delete_all() and ensure that there is no way for a
     // thread to add itself to the thread list after the server's final
     // delete_all().
+
+    // sig_handler_t int_hand;
+    // int_hand.set = SIGINT;
+    // if (pthread_create(&int_hand.thread, 0, , ) != 0) { //waht to pass in
+    //     //error check
+    // }
+    
+    
+    //create client thread??
+
+    if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
+        printf("sig_ign error");
+    }
+
+    start_listener(argv[1], client_constructor); //correct??
+
+    //delete database when num of clients is 0??
 
     return 0;
 }
