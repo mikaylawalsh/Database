@@ -106,7 +106,7 @@ void client_constructor(FILE *cxstr) {
     c->prev = NULL;
     c->next = NULL;
 
-    if ((err = pthread_detatch(c->thread)) != 0) {
+    if ((err = pthread_detach(c->thread)) != 0) {
         handle_error_en(err, "pthread create");    
     }
 }
@@ -154,9 +154,9 @@ void *run_client(void *arg) {
 
     //push thread_cleanup to remove it if the thread is canceled?
 
-    char *response;
-    char *command;
     while(1) {
+        char *response;
+        char *command;
         if (comm_serve(c->cxstr, response, command) == -1) {
             break;
         }
