@@ -109,7 +109,7 @@ void client_constructor(FILE *cxstr) {
     //     handle_error_en(err, "pthread join");
     // }
     
-    c->cxstr = fopen(cxstr, r+); //do i need to open this
+    c->cxstr = cxstr; //do i need to open this
     c->prev = NULL;
     c->next = NULL;
     if ((err = pthread_detach(c->thread)) != 0) {
