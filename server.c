@@ -28,10 +28,10 @@ typedef struct server_control {
     int num_client_threads;
 } server_control_t;
 
-server_control_t scontrol;
-scontrol.server_mutex = PTHREAD_MUTEX_INITIALIZER;
-scontrol.server_cond = PTHREAD_COND_INITIALIZER;
-scontrol.num_client_threads = 0;
+server_control_t *scontrol;
+scontrol->server_mutex = PTHREAD_MUTEX_INITIALIZER;
+scontrol->server_cond = PTHREAD_COND_INITIALIZER;
+scontrol->num_client_threads = 0;
 
 /*
  * Controls when the clients in the client thread list should be stopped and
@@ -43,10 +43,10 @@ typedef struct client_control {
     int stopped;
 } client_control_t;
 
-client_control_t ccontrol;
-ccontrol.go_mutex = PTHREAD_MUTEX_INITIALIZER;
-ccontrol.go = PTHREAD_COND_INITIALIZER;
-cclient.stopped = 0; //0 when not stopped, 1 when stopped
+client_control_t *ccontrol;
+ccontrol->go_mutex = PTHREAD_MUTEX_INITIALIZER;
+ccontrol->go = PTHREAD_COND_INITIALIZER;
+cclient->stopped = 0; //0 when not stopped, 1 when stopped
 
 /*
  * The encapsulation of a client thread, i.e., the thread that handles
