@@ -136,14 +136,19 @@ void client_destructor(client_t *client) {
     comm_shutdown(client->cxstr);
 
     //is this necessary? might cause segfault. -- make list circular to avoid this issue 
+
+    pthread_mutex_lock(thread_list_mutex);
     client_t *prev = client->prev;
     client_t *next = client->next;
     next->prev = prev;
     prev->next = next;
     client->prev = NULL;
     client->next = NULL;
+    pthread_mutex_unlock(thread_list_mutex);
 
+    pthread_mutex_lock(scontrol.server_mutex);
     scontrol.num_client_threads--; 
+    pthread_mutex_unlock(scontrol.server_mutex);
 
     free(client);
 }
@@ -168,6 +173,7 @@ void *run_client(void *arg) {
         client_t *c = (client_t *) arg;
 
         //not sure if this is correct
+        pthread_mutex_lock(thread_list_mutex);
         if (thread_list_head == NULL) {
             thread_list_head = c;
         } else {
@@ -177,9 +183,12 @@ void *run_client(void *arg) {
             c->next = old;
             old->prev = c;   
         }
+        pthread_mutex_unlock(thread_list_mutex);
 
         //increment num
+        pthread_mutex_lock(scontrol.server_mutex);
         scontrol.num_client_threads++;
+        pthread_mutex_unlock(scontrol.server_mutex);
         
         pthread_cleanup_push(thread_cleanup, c);
 
@@ -285,7 +294,9 @@ int main(int argc, char *argv[]) {
     }
 
     //set accepted to 0
+    pthread_mutex_lock(server_accept_mutex);
     server_accept = 0;
+    pthread_mutex_unlock(server_accept_mutex);
 
     return 0;
 }
