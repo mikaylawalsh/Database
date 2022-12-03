@@ -100,25 +100,23 @@ void client_constructor(FILE *cxstr) {
     if ((c = (client_t *) malloc(sizeof(client_t))) == NULL) {
         printf("malloc error");
     } 
-
-    fprintf(stderr, "here\n");
     
     int err;
     if ((err = pthread_create(&c->thread, 0, run_client, c)) != 0) { //what goes in here
         handle_error_en(err, "pthread create");
     }
-    fprintf(stderr, "now here\n");
     // if ((err = pthread_join(c->thread, 0)) != 0) {
     //     handle_error_en(err, "pthread join");
     // }
-    fprintf(stderr, "now im here\n");
+    
     c->cxstr = cxstr; //do i need to open this 
     c->prev = NULL;
     c->next = NULL;
-
+    fprintf(stderr, "here\n");
     if ((err = pthread_detach(c->thread)) != 0) {
         handle_error_en(err, "pthread detach");    
     }
+    fprintf(stderr, "2here\n");
 }
 
 void client_destructor(client_t *client) {
