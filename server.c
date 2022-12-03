@@ -46,7 +46,7 @@ typedef struct client_control {
 client_control_t ccontrol = {PTHREAD_MUTEX_INITIALIZER, PTHREAD_COND_INITIALIZER, 0};
 // ccontrol->go_mutex = PTHREAD_MUTEX_INITIALIZER;
 // ccontrol->go = PTHREAD_COND_INITIALIZER;
-// cclient->stopped = 0; 0 when not stopped, 1 when stopped
+// cclient->stopped = 0; c0 when not stopped, 1 when stopped
 
 /*
  * The encapsulation of a client thread, i.e., the thread that handles
@@ -183,11 +183,11 @@ void *run_client(void *arg) {
         
         pthread_cleanup_push(thread_cleanup, c);
 
-        while(1) {
-            char response[512];
-            char command[512];
-            memset(response, 0, 512);
-            memset(command, 0, 512); 
+        char response[512];
+        char command[512];
+        memset(response, 0, 512);
+        memset(command, 0, 512);
+        while(1) { 
             if (comm_serve(c->cxstr, response, command) == -1) { //get the command 
                 break;
             }
