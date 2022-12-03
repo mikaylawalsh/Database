@@ -164,6 +164,8 @@ void *run_client(void *arg) {
             c->next = old;
             old->prev = c;   
         }
+
+        //increment num
         
         pthread_cleanup_push(thread_cleanup, c);
 
@@ -178,7 +180,7 @@ void *run_client(void *arg) {
             interpret_command(command, response, 512); //gets the response
         }
 
-        client_destructor(c);
+        //client_destructor(c);
 
         pthread_cleanup_pop(1); //not sure what to pass in
 
