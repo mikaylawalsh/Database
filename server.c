@@ -14,6 +14,8 @@
 #include "./comm.h"
 #include "./db.h"
 
+int server_accept = 0; //make thread safe!
+
 /*
  * Use the variables in this struct to synchronize your main thread with client
  * threads. Note that all client threads must have terminated before you clean
@@ -57,7 +59,7 @@ typedef struct sig_handler {
     pthread_t thread;
 } sig_handler_t;
 
-client_t *thread_list_head;
+client_t *thread_list_head; //make list circular and doubly-linked 
 pthread_mutex_t thread_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void *run_client(void *arg);
@@ -118,7 +120,7 @@ void client_destructor(client_t *client) {
 
     comm_shutdown(client->cxstr);
 
-    //is this necessary? might cause segfault. 
+    //is this necessary? might cause segfault. -- make list circular to avoid this issue 
     client_t *prev = client->prev;
     client_t *next = client->next;
     next->prev = prev;
@@ -143,7 +145,10 @@ void *run_client(void *arg) {
     //
     // You will need to modify this when implementing functionality for stop and go!
 
-    //make sure server is still accepting clients? 
+    //make sure server is still accepting clients
+    if (server_accept != 0) {
+        //exit??
+    } 
 
     client_t *c = (client_t *) arg;
 
@@ -152,18 +157,20 @@ void *run_client(void *arg) {
     c->next = thread_list_head;
     c = thread_list_head;
 
-    //push thread_cleanup to remove it if the thread is canceled?
+    pthread_cleanup_push(thread_cleanup, c);
 
     while(1) {
-        char *response;
-        char *command;
-        if (comm_serve(c->cxstr, response, command) == -1) {
+        char *response = NULL;
+        char *command = NULL;
+        if (comm_serve(c->cxstr, response, command) == -1) { //get the command 
             break;
         }
-        interpret_command(command, response, strlen(response));
+        interpret_command(command, response, 512); //gets the response
     }
 
     client_destructor(c);
+
+    pthread_cleanup_pop(1); //not sure what to pass in
 
     return c; //what to return 
 }
@@ -220,14 +227,7 @@ int main(int argc, char *argv[]) {
     // happens in a call to delete_all() and ensure that there is no way for a
     // thread to add itself to the thread list after the server's final
     // delete_all().
-
-    // sig_handler_t int_hand;
-    // int_hand.set = SIGINT;
-    // if (pthread_create(&int_hand.thread, 0, , ) != 0) { //waht to pass in
-    //     //error check
-    // }
     
-
     //create client thread??
 
     if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
