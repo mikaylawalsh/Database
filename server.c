@@ -234,7 +234,7 @@ int main(int argc, char *argv[]) {
         printf("sig_ign error");
     }
 
-    start_listener(atoi(argv[1]), client_constructor); //correct??
+    start_listener(atoi(argv[0]), client_constructor); //correct??
 
     //delete database when num of clients is 0??
 
