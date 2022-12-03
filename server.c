@@ -14,7 +14,7 @@
 #include "./comm.h"
 #include "./db.h"
 
-int server_accept = 0; //make thread safe!
+int server_accept = 1; //make thread safe! lock before altering 
 
 /*
  * Use the variables in this struct to synchronize your main thread with client
@@ -59,7 +59,7 @@ typedef struct sig_handler {
     pthread_t thread;
 } sig_handler_t;
 
-client_t *thread_list_head; //make list circular and doubly-linked 
+client_t *thread_list_head = NULL; //make list circular and doubly-linked 
 pthread_mutex_t thread_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void *run_client(void *arg);
@@ -95,6 +95,7 @@ void client_constructor(FILE *cxstr) {
     // to the input argument.
     // Step 2: Create the new client thread running the run_client routine.
     // Step 3: Detach the new client thread
+    
     client_t *c;
     if ((c = (client_t *) malloc(sizeof(client_t))) == NULL) {
         printf("malloc error");
@@ -112,7 +113,7 @@ void client_constructor(FILE *cxstr) {
     c->next = NULL;
 
     if ((err = pthread_detach(c->thread)) != 0) {
-        handle_error_en(err, "pthread create");    
+        handle_error_en(err, "pthread detach");    
     }
 }
 
@@ -163,8 +164,10 @@ void *run_client(void *arg) {
     pthread_cleanup_push(thread_cleanup, c);
 
     while(1) {
-        char *response = NULL;
-        char *command = NULL;
+        char response[512];
+        char command[512];
+        memset(response); //error check
+        memset(command); 
         if (comm_serve(c->cxstr, response, command) == -1) { //get the command 
             break;
         }
@@ -181,6 +184,14 @@ void *run_client(void *arg) {
 void delete_all() {
     // TODO: Cancel every thread in the client thread list with the
     // pthread_cancel function.
+    client_t *cur = thread_list_head;
+    do { 
+        int err; 
+        if ((err = pthread_cancel(cur->thead)) != 0) {
+            handle_error_en(err, "pthread cancel"); 
+        }
+        cur = cur->next;
+    } while (cur != thread_list_head);
 }
 
 // Cleanup routine for client threads, called on cancels and exit.
@@ -188,6 +199,12 @@ void thread_cleanup(void *arg) {
     // TODO: Remove the client object from thread list and call
     // client_destructor. This function must be thread safe! The client must
     // be in the list before this routine is ever run.
+
+    client_t *c = (client_t *) arg;
+
+    //make thread safe
+
+    client_destructor(c);
 }
 
 // Code executed by the signal handler thread. For the purpose of this
@@ -240,7 +257,13 @@ int main(int argc, char *argv[]) {
 
     start_listener(atoi(argv[1]), client_constructor); //correct??
 
+    while(1) {
+        
+    }
+
     //delete database when num of clients is 0??
+
+    //set accepted to 0
 
     return 0;
 }
