@@ -302,12 +302,12 @@ int main(int argc, char *argv[]) {
                 i++;
                 token = strtok(0, "\t\n ");
             }
-            
-            if (tokens[0] == "s") {
+        
+            if (strcmp(tokens[0], "s")) {
                 //stop 
-            } else if (tokens[0] == "g") {
+            } else if (strcmp(tokens[0], "g")) {
                 //resume 
-            } else if (tokens[0] == "p") {
+            } else if (strcmp(tokens[0], "p")) {
                 //print 
             } else {
                 fprintf(stderr, "syntax error: please enter either s, g, or p");
