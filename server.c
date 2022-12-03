@@ -284,9 +284,39 @@ int main(int argc, char *argv[]) {
     start_listener(atoi(argv[1]), client_constructor);
 
     while(1) {
-        //eventually have commands here
+        //read something in and put it in some array called input -- use fgets or read 
+        size_t MAX = 1024;
+        char buffer[MAX];
+        memset(buffer, 0, MAX);
+        if (read(0, buffer, MAX) != 0) {
+            //parse
+            char *token;
+            char *tokens[512];
+            int i = 0;
+            token = strtok(buffer, "\t\n ");
+            if (token == NULL) {
+                continue; //??
+            }
+            while (token != NULL) {
+                tokens[i] = token;
+                i++;
+                token = strtok(0, "\t\n ");
+            }
+            
+            if (tokens[0] == "s") {
+                //stop 
+            } else if (tokens[0] == "g") {
+                //resume 
+            } else if (tokens[0] == "p") {
+                //print 
+            } else {
+                fprintf(stderr, "syntax error: please enter either s, g, or p");
+            }
+        } else {
+            //revieced EOF - handle 
+            //recieved error - handle 
+        }
     }
-    fprintf(stderr, "here\n");
 
     //delete database when num of clients is 0
     if (scontrol.num_client_threads == 0) {
