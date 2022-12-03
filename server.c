@@ -166,8 +166,8 @@ void *run_client(void *arg) {
     while(1) {
         char response[512];
         char command[512];
-        memset(response); //error check
-        memset(command); 
+        memset(response, 0, 512); //error check
+        memset(command, 0, 512); 
         if (comm_serve(c->cxstr, response, command) == -1) { //get the command 
             break;
         }
