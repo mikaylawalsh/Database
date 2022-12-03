@@ -184,6 +184,7 @@ void *run_client(void *arg) {
 
         return c; //what to return 
     }
+    return NULL;
 }
 
 void delete_all() {
