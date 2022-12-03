@@ -260,6 +260,7 @@ int main(int argc, char *argv[]) {
     while(1) {
         
     }
+    fprintf(stderr, "here\n");
 
     //delete database when num of clients is 0??
 
