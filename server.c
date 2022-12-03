@@ -15,6 +15,7 @@
 #include "./db.h"
 
 int server_accept = 1; //make thread safe! lock before altering 
+pthread_mutex_t server_accept_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /*
  * Use the variables in this struct to synchronize your main thread with client
@@ -27,6 +28,11 @@ typedef struct server_control {
     int num_client_threads;
 } server_control_t;
 
+server_control_t scontrol;
+scontrol.server_mutex = PTHREAD_MUTEX_INITIALIZER;
+scontrol.server_cond = PTHREAD_COND_INITIALIZER;
+scontrol.num_client_threads = 0;
+
 /*
  * Controls when the clients in the client thread list should be stopped and
  * let go.
@@ -36,6 +42,11 @@ typedef struct client_control {
     pthread_cond_t go;
     int stopped;
 } client_control_t;
+
+client_control_t ccontrol;
+ccontrol.go_mutex = PTHREAD_MUTEX_INITIALIZER;
+ccontrol.go = PTHREAD_COND_INITIALIZER;
+cclient.stopped = 0; //0 when not stopped, 1 when stopped
 
 /*
  * The encapsulation of a client thread, i.e., the thread that handles
@@ -132,6 +143,8 @@ void client_destructor(client_t *client) {
     client->prev = NULL;
     client->next = NULL;
 
+    scontrol.num_client_threads--; 
+
     free(client);
 }
 
@@ -166,21 +179,20 @@ void *run_client(void *arg) {
         }
 
         //increment num
+        scontrol.num_client_threads++;
         
         pthread_cleanup_push(thread_cleanup, c);
 
         while(1) {
             char response[512];
             char command[512];
-            memset(response, 0, 512); //error check
+            memset(response, 0, 512);
             memset(command, 0, 512); 
             if (comm_serve(c->cxstr, response, command) == -1) { //get the command 
                 break;
             }
             interpret_command(command, response, 512); //gets the response
         }
-
-        //client_destructor(c);
 
         pthread_cleanup_pop(1); //not sure what to pass in
 
@@ -267,9 +279,13 @@ int main(int argc, char *argv[]) {
     }
     fprintf(stderr, "here\n");
 
-    //delete database when num of clients is 0??
+    //delete database when num of clients is 0
+    if (scontrol.num_client_threads == 0) {
+        db_cleanup();
+    }
 
     //set accepted to 0
+    server_accept = 0;
 
     return 0;
 }
