@@ -95,6 +95,8 @@ void client_constructor(FILE *cxstr) {
     // to the input argument.
     // Step 2: Create the new client thread running the run_client routine.
     // Step 3: Detach the new client thread
+
+    fprintf(stderr, "here");
     
     client_t *c;
     if ((c = (client_t *) malloc(sizeof(client_t))) == NULL) {
