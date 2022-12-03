@@ -112,11 +112,9 @@ void client_constructor(FILE *cxstr) {
     c->cxstr = cxstr; //do i need to open this 
     c->prev = NULL;
     c->next = NULL;
-    fprintf(stderr, "here\n");
     if ((err = pthread_detach(c->thread)) != 0) {
         handle_error_en(err, "pthread detach");    
     }
-    fprintf(stderr, "2here\n");
 }
 
 void client_destructor(client_t *client) {
