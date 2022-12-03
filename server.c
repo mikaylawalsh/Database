@@ -107,10 +107,11 @@ void client_constructor(FILE *cxstr) {
     if ((err = pthread_create(&c->thread, 0, run_client, c)) != 0) { //what goes in here
         handle_error_en(err, "pthread create");
     }
-    fprintf(stderr, "here\n");
+    fprintf(stderr, "now here\n");
     if ((err = pthread_join(c->thread, 0)) != 0) {
         handle_error_en(err, "pthread join");
     }
+    fprintf(stderr, "now im here\n");
     c->cxstr = cxstr; //do i need to open this 
     c->prev = NULL;
     c->next = NULL;
