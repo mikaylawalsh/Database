@@ -150,35 +150,40 @@ void *run_client(void *arg) {
     // You will need to modify this when implementing functionality for stop and go!
 
     //make sure server is still accepting clients
-    if (server_accept != 0) {
-        //exit??
-    } 
+    if (server_accept == 1) {
+        
+        client_t *c = (client_t *) arg;
 
-    client_t *c = (client_t *) arg;
-
-    //not sure if this is correct
-    thread_list_head->prev = c;
-    c->next = thread_list_head;
-    c = thread_list_head;
-
-    pthread_cleanup_push(thread_cleanup, c);
-
-    while(1) {
-        char response[512];
-        char command[512];
-        memset(response, 0, 512); //error check
-        memset(command, 0, 512); 
-        if (comm_serve(c->cxstr, response, command) == -1) { //get the command 
-            break;
+        //not sure if this is correct
+        if (thread_list_head == NULL) {
+            thread_list_head = c;
+        } else {
+            client_t *old = thread_list_head;
+            thread_list_head = c;
+            c->prev = old->prev;
+            c->next = old;
+            old->prev = c;   
         }
-        interpret_command(command, response, 512); //gets the response
+        
+        pthread_cleanup_push(thread_cleanup, c);
+
+        while(1) {
+            char response[512];
+            char command[512];
+            memset(response, 0, 512); //error check
+            memset(command, 0, 512); 
+            if (comm_serve(c->cxstr, response, command) == -1) { //get the command 
+                break;
+            }
+            interpret_command(command, response, 512); //gets the response
+        }
+
+        client_destructor(c);
+
+        pthread_cleanup_pop(1); //not sure what to pass in
+
+        return c; //what to return 
     }
-
-    client_destructor(c);
-
-    pthread_cleanup_pop(1); //not sure what to pass in
-
-    return c; //what to return 
 }
 
 void delete_all() {
@@ -247,18 +252,15 @@ int main(int argc, char *argv[]) {
     // happens in a call to delete_all() and ensure that there is no way for a
     // thread to add itself to the thread list after the server's final
     // delete_all().
-    
-    //create client thread??
-
 
     if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
         printf("sig_ign error");
     }
 
-    start_listener(atoi(argv[1]), client_constructor); //correct??
+    start_listener(atoi(argv[1]), client_constructor);
 
     while(1) {
-        
+        //eventually have commands here
     }
     fprintf(stderr, "here\n");
 
