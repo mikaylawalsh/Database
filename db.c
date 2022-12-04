@@ -13,6 +13,8 @@
 // freed (it's allocated in the data region).
 node_t head = {"", "", 0, 0};
 
+pthread_rwlock_t tree_lock = PTHREAD_RWLOCK_INITIALIZER; //way to make this apply to tree
+
 node_t *node_constructor(char *arg_name, char *arg_value, node_t *arg_left,
                          node_t *arg_right) {
     size_t name_len = strlen(arg_name);
@@ -60,14 +62,17 @@ void node_destructor(node_t *node) {
 
 void db_query(char *name, char *result, int len) {
     // TODO: Make this thread-safe!
+    pthread_rwlock_rdlock(&tree_lock);
     node_t *target;
     target = search(name, &head, 0);
 
     if (target == 0) {
         snprintf(result, len, "not found");
+        pthread_rwlock_unlock(&tree_lock);
         return;
     } else {
         snprintf(result, len, "%s", target->value);
+        pthread_rwlock_unlock(&tree_lock);
         return;
     }
 }
@@ -78,7 +83,9 @@ int db_add(char *name, char *value) {
     node_t *target;
     node_t *newnode;
 
+    pthread_rwlock_wrlock(&tree_lock);
     if ((target = search(name, &head, &parent)) != 0) {
+        pthread_rwlock_unlock(&tree_lock);
         return (0);
     }
 
@@ -88,7 +95,7 @@ int db_add(char *name, char *value) {
         parent->lchild = newnode;
     else
         parent->rchild = newnode;
-
+    pthread_rwlock_unlock(&tree_lock);
     return (1);
 }
 
@@ -98,9 +105,11 @@ int db_remove(char *name) {
     node_t *dnode;
     node_t *next;
 
+    pthread_rwlock_wrlock(&tree_lock);
     // first, find the node to be removed
     if ((dnode = search(name, &head, &parent)) == 0) {
         // it's not there
+        pthread_rwlock_unlock(&tree_lock);
         return (0);
     }
 
@@ -151,7 +160,7 @@ int db_remove(char *name) {
 
         node_destructor(next);
     }
-
+    pthread_rwlock_unlock(&tree_lock);
     return (1);
 }
 

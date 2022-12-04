@@ -284,7 +284,6 @@ int main(int argc, char *argv[]) {
     start_listener(atoi(argv[1]), client_constructor);
 
     while(1) {
-        //read something in and put it in some array called input -- use fgets or read 
         size_t MAX = 1024;
         char buffer[MAX];
         memset(buffer, 0, MAX);
