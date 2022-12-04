@@ -15,8 +15,6 @@ node_t head = {"", "", 0, 0};
 
 // pthread_rwlock_t tree_lock = PTHREAD_RWLOCK_INITIALIZER; //way to make this apply to tree
 
-enum locktype {l_read, l_write};
-
 #define lock(lt, lk) (((lt) == l_read)? pthread_rwlock_rdlock(lk): pthread_rwlock_wrlock(lk))
 
 node_t *node_constructor(char *arg_name, char *arg_value, node_t *arg_left,
