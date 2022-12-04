@@ -17,9 +17,7 @@ node_t head = {"", "", 0, 0};
 
 enum locktype {l_read, l_write};
 
-#define lock(lt, lk) ((lt) == l_read)?
-    pthread_rwlock_rdlock(lk):
-    pthread_rwlock_wrlock(lk)
+#define lock(lt, lk) (((lt) == l_read)? pthread_rwlock_rdlock(lk): pthread_rwlock_wrlock(lk))
 
 node_t *node_constructor(char *arg_name, char *arg_value, node_t *arg_left,
                          node_t *arg_right) {
