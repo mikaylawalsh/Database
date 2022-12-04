@@ -13,7 +13,13 @@
 // freed (it's allocated in the data region).
 node_t head = {"", "", 0, 0};
 
-pthread_rwlock_t tree_lock = PTHREAD_RWLOCK_INITIALIZER; //way to make this apply to tree
+// pthread_rwlock_t tree_lock = PTHREAD_RWLOCK_INITIALIZER; //way to make this apply to tree
+
+enum locktype {l_read, l_write};
+
+#define lock(lt, lk) ((lt) == l_read)?
+    pthread_rwlock_rdlock(lk):
+    pthread_rwlock_wrlock(lk)
 
 node_t *node_constructor(char *arg_name, char *arg_value, node_t *arg_left,
                          node_t *arg_right) {
@@ -51,6 +57,7 @@ node_t *node_constructor(char *arg_name, char *arg_value, node_t *arg_left,
 
     new_node->lchild = arg_left;
     new_node->rchild = arg_right;
+    pthread_rwlock_init(&new_node->lock, NULL); //erro chekc 
     return new_node;
 }
 
@@ -62,17 +69,18 @@ void node_destructor(node_t *node) {
 
 void db_query(char *name, char *result, int len) {
     // TODO: Make this thread-safe!
-    pthread_rwlock_rdlock(&tree_lock);
+    pthread_rwlock_rdlock(&head->lock);
     node_t *target;
-    target = search(name, &head, 0);
+    target = search(name, &head, 0, l_read);
 
     if (target == 0) {
         snprintf(result, len, "not found");
-        pthread_rwlock_unlock(&tree_lock);
+        pthread_rwlock_unlock(&head->lock); //correct? 
         return;
     } else {
         snprintf(result, len, "%s", target->value);
-        pthread_rwlock_unlock(&tree_lock);
+        pthread_rwlock_unlock(&target->lock);
+        pthread_rwlock_unlock(&head->lock);
         return;
     }
 }
@@ -83,9 +91,10 @@ int db_add(char *name, char *value) {
     node_t *target;
     node_t *newnode;
 
-    pthread_rwlock_wrlock(&tree_lock);
-    if ((target = search(name, &head, &parent)) != 0) {
-        pthread_rwlock_unlock(&tree_lock);
+    pthread_rwlock_wrlock(&head->lock);
+    if ((target = search(name, &head, &parent, l_write)) != 0) {
+        pthread_rwlock_unlock(&target->lock);
+        pthread_rwlock_unlock(&parent->lock);
         return (0);
     }
 
@@ -95,7 +104,7 @@ int db_add(char *name, char *value) {
         parent->lchild = newnode;
     else
         parent->rchild = newnode;
-    pthread_rwlock_unlock(&tree_lock);
+    pthread_rwlock_unlock(&parent->lock);
     return (1);
 }
 
@@ -105,24 +114,28 @@ int db_remove(char *name) {
     node_t *dnode;
     node_t *next;
 
-    pthread_rwlock_wrlock(&tree_lock);
+    pthread_rwlock_wrlock(&head->lock);
     // first, find the node to be removed
-    if ((dnode = search(name, &head, &parent)) == 0) {
+    if ((dnode = search(name, &head, &parent, l_write)) == 0) {
         // it's not there
-        pthread_rwlock_unlock(&tree_lock);
+        pthread_rwlock_unlock(&parent->lock);
+        pthread_rwlock_unlock(&dnode->lock);
         return (0);
     }
+    //on return from search, if result is none zero, parent and dnode are locked
 
     // We found it, if the node has no
     // right child, then we can merely replace its parent's pointer to
     // it with the node's left child.
 
+    //pthread_rwlock_wrlock(&parent->lock);
     if (dnode->rchild == 0) {
         if (strcmp(dnode->name, parent->name) < 0)
             parent->lchild = dnode->lchild;
         else
             parent->rchild = dnode->lchild;
-
+        pthread_rwlock_unlock(&dnode->lock);
+        pthread_rwlock_unlock(&parent->lock);
         // done with dnode
         node_destructor(dnode);
     } else if (dnode->lchild == 0) {
@@ -131,7 +144,8 @@ int db_remove(char *name) {
             parent->lchild = dnode->rchild;
         else
             parent->rchild = dnode->rchild;
-
+        pthread_rwlock_unlock(&dnode->lock);
+        pthread_rwlock_unlock(&parent->lock);
         // done with dnode
         node_destructor(dnode);
     } else {
@@ -142,12 +156,16 @@ int db_remove(char *name) {
 
         next = dnode->rchild;
         node_t **pnext = &dnode->rchild;
+        pthread_rwlock_wrlock(&next->lock);
+        pthread_rwlock_unlock(&parent->lock);
 
         while (next->lchild != 0) {
             // work our way down the lchild chain, finding the smallest node
             // in the subtree.
             node_t *nextl = next->lchild;
+            pthread_rwlock_wrlock(&nextl->lock);
             pnext = &next->lchild;
+            pthread_rwlock_unlock(&next->lock);
             next = nextl;
         }
 
@@ -158,13 +176,15 @@ int db_remove(char *name) {
         snprintf(dnode->value, MAXLEN, "%s", next->value);
         *pnext = next->rchild;
 
+        pthread_rwlock_unlock(&dnode->lock);
+        pthread_rwlock_unlock(&next->lock);
+
         node_destructor(next);
     }
-    pthread_rwlock_unlock(&tree_lock);
     return (1);
 }
 
-node_t *search(char *name, node_t *parent, node_t **parentpp) {
+node_t *search(char *name, node_t *parent, node_t **parentpp, enum locktype lt) {
     // Search the tree, starting at parent, for a node containing
     // name (the "target node").  Return a pointer to the node,
     // if found, otherwise return 0.  If parentpp is not 0, then it points
@@ -183,21 +203,23 @@ node_t *search(char *name, node_t *parent, node_t **parentpp) {
     } else {
         next = parent->rchild;
     }
-
     if (next == NULL) {
         result = NULL;
     } else {
+        lock(lt, &next->lock);
         if (strcmp(name, next->name) == 0) {
             result = next;
         } else {
-            return search(name, next, parentpp);
+            pthread_rwlock_unlock(&parent->lock);
+            return search(name, next, parentpp, lt);
         }
     }
 
     if (parentpp != NULL) {
         *parentpp = parent;
+    } else {
+        pthread_rwlock_unlock(&parent->lock);
     }
-
     return result;
 }
 
