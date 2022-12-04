@@ -67,18 +67,18 @@ void node_destructor(node_t *node) {
 
 void db_query(char *name, char *result, int len) {
     // TODO: Make this thread-safe!
-    pthread_rwlock_rdlock(&head->lock);
+    pthread_rwlock_rdlock(&head.lock);
     node_t *target;
     target = search(name, &head, 0, l_read);
 
     if (target == 0) {
         snprintf(result, len, "not found");
-        pthread_rwlock_unlock(&head->lock); //correct? 
+        pthread_rwlock_unlock(&head.lock); //correct? 
         return;
     } else {
         snprintf(result, len, "%s", target->value);
         pthread_rwlock_unlock(&target->lock);
-        pthread_rwlock_unlock(&head->lock);
+        pthread_rwlock_unlock(&head.lock);
         return;
     }
 }
@@ -89,7 +89,7 @@ int db_add(char *name, char *value) {
     node_t *target;
     node_t *newnode;
 
-    pthread_rwlock_wrlock(&head->lock);
+    pthread_rwlock_wrlock(&head.lock);
     if ((target = search(name, &head, &parent, l_write)) != 0) {
         pthread_rwlock_unlock(&target->lock);
         pthread_rwlock_unlock(&parent->lock);
@@ -112,7 +112,7 @@ int db_remove(char *name) {
     node_t *dnode;
     node_t *next;
 
-    pthread_rwlock_wrlock(&head->lock);
+    pthread_rwlock_wrlock(&head.lock);
     // first, find the node to be removed
     if ((dnode = search(name, &head, &parent, l_write)) == 0) {
         // it's not there
