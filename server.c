@@ -341,6 +341,7 @@ int main(int argc, char *argv[]) {
                 char file[1];
                 fprintf(stderr, "here"); 
                 sscanf(&buffer[1], " %s",file); //error check
+                fprintf(stderr, "%s", file);
                 if (file != NULL) {
                     //db_print(file);
                 } else {
