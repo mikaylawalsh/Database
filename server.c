@@ -336,7 +336,7 @@ int main(int argc, char *argv[]) {
                 //resume 
                 fprintf(stderr, "g");
                 client_control_release();
-            } else if (strcmp(&buffer[0], 'p')) {
+            } else if (strcmp(&buffer[0], "p")) {
                 //print
                 char file[512];
                 sscanf(&buffer[1], "%s", file); //error check
