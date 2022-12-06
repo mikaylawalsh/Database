@@ -338,12 +338,9 @@ int main(int argc, char *argv[]) {
         int r = read(0, buffer, MAX);
         if (r > 0) {
             char bufz[1];
-            char file[20]; //make bigger?
-            memset(file, 0, 20);
+            char file[512];
+            memset(file, 0, 512);
             sscanf(buffer, "%s %s", bufz, file);
-            fprintf(stderr, "b = %s\n", bufz);
-            fprintf(stderr, "f = %s\n", file);
-            //bufz = strtok(buffer, "\t\n ");
             if (!strcmp(bufz, "s")) { 
                 printf("stopped\n");
                 client_control_stop();
@@ -352,11 +349,12 @@ int main(int argc, char *argv[]) {
                 client_control_release();
             } else if (!strcmp(bufz, "p")) {
                 //print
-                if (file != NULL) {
-                    db_print(file);
-                } else {
-                    db_print(NULL); 
-                }
+                db_print(file);
+                // if (file != NULL) {
+                //     db_print(file);
+                // } else {
+                //     db_print(NULL); 
+                // }
             } else {
                 fprintf(stderr, "syntax error: please enter either s, g, or p\n");
             }
