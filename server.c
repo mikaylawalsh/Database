@@ -343,7 +343,7 @@ int main(int argc, char *argv[]) {
             memset(file, 0, 512);
             memset(temp, 0, 512);
             strcpy(temp, &buffer[1]);
-            file[0] = strtok(buffer, "\t\n ");
+            file = strtok(buffer, "\t\n ");
             printf("%s", file);
             //sscanf(&buffer[1], "%*s %s", file); //not working 
             bufz = strtok(buffer, "\t\n ");
