@@ -330,16 +330,16 @@ int main(int argc, char *argv[]) {
         memset(buffer, 0, MAX);
         int r = read(0, buffer, MAX);
         if (r > 0) {
-            if (strcmp(buffer[0], "s")) {
+            if (strcmp(&buffer[0], "s")) {
                 //stop
                 client_control_stop();
-            } else if (strcmp(buffer[0], "g")) {
+            } else if (strcmp(&buffer[0], "g")) {
                 //resume 
                 client_control_release();
-            } else if (strcmp(buffer[0], "p")) {
+            } else if (strcmp(&buffer[0], "p")) {
                 //print
                 char file[512];
-                sscanf(&buffer[1], " ", file); //error check
+                sscanf(&buffer[1], " %s", file); //error check
                 if (file != NULL) {
                     db_print(file);
                 } else {
