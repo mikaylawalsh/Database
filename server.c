@@ -327,8 +327,8 @@ int main(int argc, char *argv[]) {
         char buffer[MAX];
         memset(buffer, 0, MAX);
         int r = read(0, buffer, MAX);
-        fprintf(stderr, "%s", buffer);
         if (r > 0) {
+            fprintf(stderr, "%s", buffer);
             if (strcmp(&buffer[0], "s")) {
                 //stop
                 client_control_stop();
