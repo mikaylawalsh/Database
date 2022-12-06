@@ -246,8 +246,9 @@ void *monitor_signal(void *arg) {
     // all client threads when one arrives.
     sigset_t *set;
     set = (sigset_t *) arg;
+    int sig = SIGINT;
 
-    if (sigwait(set, *SIGINT) == 0) {
+    if (sigwait(set, &sig) == 0) {
         delete_all();
     } else { 
         //error check
