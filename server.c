@@ -230,8 +230,8 @@ void delete_all() {
     // TODO: Cancel every thread in the client thread list with the
     // pthread_cancel function.
     client_t *cur = thread_list_head;
-    if (cur == NULL) {
-        return;
+    if (cur == NULL && scontrol.num_client_threads == 0) {
+        pthread_cond_signal(&scontrol.server_cond);
     }
     do { 
         int err; 
@@ -277,6 +277,7 @@ void *monitor_signal(void *arg) {
         if (sigwait(set, &sig) == 0) {
             if (sig == SIGINT) {
                 delete_all(); //lcok thread list 
+                return NULL;
             }
         } else { 
             //error check
