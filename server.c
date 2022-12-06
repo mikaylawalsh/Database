@@ -338,10 +338,9 @@ int main(int argc, char *argv[]) {
         int r = read(0, buffer, MAX);
         if (r > 0) {
             char bufz[1];
-            char file[20];
-            sscanf(buffer, "%s %s", bufz, file); //not working 
-            fprintf(stderr, "b = %s\n", bufz);
-            fprintf(stderr, "f = %s\n", file);
+            char file[20]; //make bigger?
+            memset(file, 0, 20);
+            sscanf(buffer, "%s %s", bufz, file);
             //bufz = strtok(buffer, "\t\n ");
             if (!strcmp(bufz, "s")) { 
                 printf("stopped\n");
