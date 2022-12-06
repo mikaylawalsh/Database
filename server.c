@@ -328,17 +328,15 @@ int main(int argc, char *argv[]) {
         memset(buffer, 0, MAX);
         int r = read(0, buffer, MAX);
         if (r > 0) {
-            char *bufz[1]; 
-            bufz[0] = &buffer[0];
-            if (!strcmp(bufz[0], 's')) { //all matching into here? 
+            if (!strcmp(&buffer[0], "s")) { //all matching into here? 
                 fprintf(stderr, "%s", "s here");
                 client_control_stop();
                 printf("stopped");
-            } else if (!strcmp(bufz[0], "g")) {
+            } else if (!strcmp(&buffer[0], "g")) {
                 fprintf(stderr, "%s", "g here");
                 client_control_release();
                 printf("resumed");
-            } else if (!strcmp(bufz[0], "p")) {
+            } else if (!strcmp(&buffer[0], "p")) {
                 //print
                 fprintf(stderr, "%s", "p here");
                 char file[512];
@@ -350,7 +348,7 @@ int main(int argc, char *argv[]) {
                     db_print(NULL); 
                 }
             } else {
-                fprintf(stderr, "syntax error: please enter either s, g, or p");
+                fprintf(stderr, "syntax error: please enter either s, g, or p\n");
             }
         } else if (r == 0){ //revieced EOF - handle 
 
