@@ -330,7 +330,7 @@ int main(int argc, char *argv[]) {
         if (r > 0) {
             char *bufz;
             char *file;
-s           scanf(buffer, "%s %s", bufz, file); //error check
+            sscanf(buffer, "%s %s", bufz, file); //error check
             //fprintf(stderr, "%s", file); 
             //bufz = strtok(buffer, "\t\n "); 
             if (!strcmp(bufz, "s")) { //all matching into here? 
