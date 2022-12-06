@@ -330,7 +330,7 @@ int main(int argc, char *argv[]) {
         if (r > 0) {
             fprintf(stderr, "%s", &buffer[0]);
             fprintf(stderr, "%s", &buffer[1]);
-            if (!strcmp(&buffer[0], "s")) { //all matching into here? 
+            if (!strcmp(&buffer, "s")) { //all matching into here? 
                 fprintf(stderr, "%s", "s here");
                 client_control_stop();
                 printf("stopped");
