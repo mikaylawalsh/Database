@@ -273,7 +273,7 @@ void *monitor_signal(void *arg) {
     while(1) {
         if (sigwait(set, &sig) == 0) {
             if (sig == SIGINT) {
-                delete_all();
+                delete_all(); //lcok thread list 
             }
         } else { 
             //error check
@@ -357,18 +357,20 @@ int main(int argc, char *argv[]) {
             } else {
                 fprintf(stderr, "syntax error: please enter either s, g, or p\n");
             }
-        } else if (r == 0){ //revieced EOF - handle 
+        } else if (r == 0) { //revieced EOF - handle 
 
             sig_handler_destructor(sigh);
             pthread_mutex_lock(&server_accept_mutex);
             server_accept = 0;
-            pthread_mutex_unlock(&server_accept_mutex);
             delete_all();
+            pthread_mutex_unlock(&server_accept_mutex);
             pthread_mutex_lock(&scontrol.server_mutex);
-            pthread_cond_wait(&scontrol.server_cond, &scontrol.server_mutex);  
+            while(scontrol.num_client_threads > 0) {
+                pthread_cond_wait(&scontrol.server_cond, &scontrol.server_mutex); 
+            } 
             pthread_mutex_unlock(&scontrol.server_mutex); 
             db_cleanup();
-            exit(0);
+            pthread_exit((void *) 0);
         } else if (r < 0) {
             //error check read
         }
@@ -399,8 +401,6 @@ issues:
  - stop, wait, resume check
 
  questions:
-  - how to send sigpipe for testing? 
-  - how to exit? 
   - need to cleanup and everything at end of main too? 
   - when to call client_control_wait? 
   - print, stop, go statments? 

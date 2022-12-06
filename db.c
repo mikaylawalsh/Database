@@ -77,7 +77,7 @@ void db_query(char *name, char *result, int len) {
         snprintf(result, len, "%s", target->value);
         pthread_rwlock_unlock(&target->lock);
         //pthread_rwlock_unlock(&head.lock);
-        
+
         return;
     }
 }
@@ -232,12 +232,11 @@ void db_print_recurs(node_t *node, int lvl, FILE *out) {
     // print spaces to differentiate levels
     print_spaces(lvl, out);
     // print out the current node
-    pthread_rwlock_rdlock(&node->lock);
     if (node == NULL) {
         fprintf(out, "(null)\n");
-        pthread_rwlock_unlock(&node->lock);
         return;
     }
+    pthread_rwlock_rdlock(&node->lock);
     if (node == &head) {
         fprintf(out, "(root)\n");
     } else {
