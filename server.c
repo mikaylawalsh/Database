@@ -341,7 +341,7 @@ int main(int argc, char *argv[]) {
             printf("%s", &buffer[1]);
             char file[512];
             sscanf(&buffer[1], "%*s %s", file); //not working 
-            printf("%s", buffer);
+            printf("%s", file);
             bufz = strtok(buffer, "\t\n ");
             if (!strcmp(bufz, "s")) { 
                 printf("stopped\n");
