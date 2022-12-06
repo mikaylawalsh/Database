@@ -327,6 +327,7 @@ int main(int argc, char *argv[]) {
         char buffer[MAX];
         memset(buffer, 0, MAX);
         int r = read(0, buffer, MAX);
+        fprintf(stderr, "%s", buffer);
         if (r > 0) {
             if (strcmp(&buffer[0], "s")) {
                 //stop
@@ -382,8 +383,9 @@ int main(int argc, char *argv[]) {
 issues:
  - seg fault for clt-D 
  - seg fault for sigint
- - p doesn't do anything 
+ - p doesn't do anything
  - seg fault when client exits 
+ - seg fault when client disconnects
  
  questions:
   - how to send sigpipe for testing? 
