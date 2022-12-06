@@ -329,7 +329,7 @@ int main(int argc, char *argv[]) {
         int r = read(0, buffer, MAX);
         if (r > 0) {
             if (strcmp(&buffer[0], "s")) {
-                fprintf(stderr, "%d", buffer[0]);
+                fprintf(stderr, "%s", &buffer[0]);
                 //stop
                 client_control_stop();
             } else if (strcmp(&buffer[0], "g")) {
