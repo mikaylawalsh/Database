@@ -343,7 +343,7 @@ int main(int argc, char *argv[]) {
             delete_all();
             pthread_cond_wait(&scontrol.server_cond, &scontrol.server_mutex);  
             db_cleanup();
-            exit();
+            exit(0);
             //exit
         } else if (r < 0) {
             //error check read
