@@ -330,21 +330,16 @@ int main(int argc, char *argv[]) {
         if (r > 0) {
             char *bufz;
             bufz = strtok(buffer, "\t\n "); 
-            fprintf(stderr, "%s", bufz);
-            if (!strcmp(buffer, "s")) { //all matching into here? 
-                fprintf(stderr, "%s", "s here");
-                client_control_stop();
+            if (!strcmp(bufz, "s")) { //all matching into here? 
                 printf("stopped");
-            } else if (!strcmp(&buffer[0], "g")) {
-                fprintf(stderr, "%s", "g here");
-                client_control_release();
+                client_control_stop();
+            } else if (!strcmp(bufz, "g")) {
                 printf("resumed");
-            } else if (!strcmp(&buffer[0], "p")) {
+                client_control_release();
+            } else if (!strcmp(bufz, "p")) {
                 //print
-                fprintf(stderr, "%s", "p here");
                 char file[512];
                 sscanf(&buffer[1], "%s", file); //error check
-                fprintf(stderr, "%s", file);
                 if (file != NULL) {
                     db_print(file);
                 } else {
