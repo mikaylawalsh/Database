@@ -77,6 +77,7 @@ void db_query(char *name, char *result, int len) {
         snprintf(result, len, "%s", target->value);
         pthread_rwlock_unlock(&target->lock);
         //pthread_rwlock_unlock(&head.lock);
+        
         return;
     }
 }
