@@ -297,7 +297,7 @@ int main(int argc, char *argv[]) {
     // thread to add itself to the thread list after the server's final
     // delete_all().
 
-    sig_handler_t sigh = sig_handler_constructor(); //need to do anything w sigint handler
+    sig_handler_t *sigh = sig_handler_constructor(); //need to do anything w sigint handler
 
     if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
         printf("sig_ign error");
