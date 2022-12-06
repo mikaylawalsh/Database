@@ -160,7 +160,7 @@ void client_destructor(client_t *client) {
     } else {
         client->prev = NULL;
         client->next = NULL;
-        thread_list_head = NULL;
+        thread_list_head = NULL; 
     }
     pthread_mutex_unlock(&thread_list_mutex);
 
