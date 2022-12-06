@@ -339,9 +339,12 @@ int main(int argc, char *argv[]) {
         if (r > 0) {
             char *bufz;
             char file[512];
+            char temp[512];
             memset(file, 0, 512);
-            strcpy(file, &buffer[1]);
-            printf("%s", file);
+            memset(temp, 0, 512);
+            strcpy(temp, &buffer[1]);
+            file[0] = strtok(buffer, "\t\n ");
+            printf("%s", file[0]);
             //sscanf(&buffer[1], "%*s %s", file); //not working 
             bufz = strtok(buffer, "\t\n ");
             if (!strcmp(bufz, "s")) { 
