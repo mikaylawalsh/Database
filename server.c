@@ -330,17 +330,15 @@ int main(int argc, char *argv[]) {
         if (r > 0) {
             if (strcmp(&buffer[0], "s")) {
                 //stop
-                fprintf(stderr, "%s", buffer);
                 client_control_stop();
             } else if (strcmp(&buffer[0], "g")) {
                 //resume 
-                fprintf(stderr, "%s", buffer);
                 client_control_release();
             } else if (strcmp(&buffer[0], "p")) {
                 //print
-                fprintf(stderr, "%s", buffer);
                 char file[512];
                 sscanf(&buffer[1], " %s", file); //error check
+                fprintf(stderr, "%s", file);
                 if (file != NULL) {
                     db_print(file);
                 } else {
