@@ -349,6 +349,7 @@ int main(int argc, char *argv[]) {
             } else if (strcmp(tokens[0], "p")) {
                 //print
                 if (tokens[1] != NULL) {
+                    //sscanf(tokens[1]);
                     db_print(tokens[1]);
                 } else {
                     db_print(NULL); 
@@ -386,11 +387,13 @@ int main(int argc, char *argv[]) {
 
 /*
 issues:
- - seg fault for sigint 
+ - p doesn't do anything? parsing? 
  - dead lock maybe? issue with locking in query - the thing after i call it 
- - seg fault for clt-D
+ - seg fault for clt-D 
+ - seg fault for sigint
  
  questions:
+  - parsing for p? 
   - how to send sigpipe for testing? 
   - how to exit? 
   - need to cleanup and everything at end of main too? 
