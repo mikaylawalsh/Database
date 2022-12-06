@@ -149,10 +149,19 @@ void client_destructor(client_t *client) {
     pthread_mutex_lock(&thread_list_mutex);
     client_t *prev = client->prev;
     client_t *next = client->next;
-    next->prev = prev;
-    prev->next = next;
-    client->prev = NULL;
-    client->next = NULL;
+    if (prev != NULL && next != NULL) {
+        next->prev = prev;
+        prev->next = next;
+        client->prev = NULL;
+        client->next = NULL;
+        if (thread_list_head == client) {
+            thread_list_head = next;
+        }
+    } else {
+        client->prev = NULL;
+        client->next = NULL;
+        thread_list_head = NULL;
+    }
     pthread_mutex_unlock(&thread_list_mutex);
 
     pthread_mutex_lock(&scontrol.server_mutex);
@@ -330,7 +339,7 @@ int main(int argc, char *argv[]) {
         if (r > 0) {
             char *bufz;
             bufz = strtok(buffer, "\t\n ");
-            if (!strcmp(bufz, "s")) { //all matching into here? 
+            if (!strcmp(bufz, "s")) { 
                 printf("stopped\n");
                 client_control_stop();
             } else if (!strcmp(bufz, "g")) {
@@ -339,14 +348,11 @@ int main(int argc, char *argv[]) {
             } else if (!strcmp(bufz, "p")) {
                 //print
                 char file[1];
-                fprintf(stderr, "here"); 
-                sscanf(&buffer[1], " %s",file); //error check
-                fprintf(stderr, "%s", file);
-                db_print(NULL);
+                sscanf(&buffer[1], " %s",file); //not working 
                 if (file != NULL) {
-                    //db_print(file);
+                    db_print(file);
                 } else {
-                    //db_print(NULL); 
+                    db_print(NULL); 
                 }
             } else {
                 fprintf(stderr, "syntax error: please enter either s, g, or p\n");
@@ -386,9 +392,11 @@ int main(int argc, char *argv[]) {
 /*
 issues:
  - seg fault for clt-D 
- - seg fault for sigint
+ - seg fault for sigint (need to "catch" sigint)
  - seg fault when client disconnects or exits 
- - seg fault for p  
+
+ - seg fault for db_print 
+ - stop, wait, resume check
 
  questions:
   - how to send sigpipe for testing? 
