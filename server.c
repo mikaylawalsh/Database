@@ -328,11 +328,11 @@ int main(int argc, char *argv[]) {
         memset(buffer, 0, MAX);
         int r = read(0, buffer, MAX);
         if (r > 0) {
-            if (&buffer[0] == "s") {
+            if (&buffer[0] == 's') {
                 fprintf(stderr, "%s", &buffer[0]);
                 //stop
                 client_control_stop();
-            } else if (&buffer[0] == "g") {
+            } else if (&buffer[0] == 'g') {
                 //resume 
                 fprintf(stderr, "here");
                 client_control_release();
