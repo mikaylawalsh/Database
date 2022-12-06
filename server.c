@@ -337,15 +337,12 @@ int main(int argc, char *argv[]) {
         memset(buffer, 0, MAX);
         int r = read(0, buffer, MAX);
         if (r > 0) {
-            char *bufz;
-            char *file;
-            char temp[512];
-            memset(temp, 0, 512);
-            strcpy(temp, &buffer[1]);
-            file = strtok(buffer, "\t\n ");
+            char bufz[1];
+            char file[20];
+            sscanf(&buffer, "%s %s", bufz, file); //not working 
+            printf("%s", bufz);
             printf("%s", file);
-            //sscanf(&buffer[1], "%*s %s", file); //not working 
-            bufz = strtok(buffer, "\t\n ");
+            //bufz = strtok(buffer, "\t\n ");
             if (!strcmp(bufz, "s")) { 
                 printf("stopped\n");
                 client_control_stop();
