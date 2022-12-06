@@ -230,6 +230,9 @@ void delete_all() {
     // TODO: Cancel every thread in the client thread list with the
     // pthread_cancel function.
     client_t *cur = thread_list_head;
+    if (cur == NULL) {
+        return;
+    }
     do { 
         int err; 
         if ((err = pthread_cancel(cur->thread)) != 0) {
