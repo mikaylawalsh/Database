@@ -316,35 +316,30 @@ int main(int argc, char *argv[]) {
 
     sig_handler_t *sigh = sig_handler_constructor();
 
-    // if (signal(SIGPIPE, SIG_BLOCK) == SIG_ERR) {
-    //     printf("sig_ign error");
-    // } //this is wrong i think 
-
-    sigset_t set;
-    sigemptyset(&set);
-    sigaddset(&set, SIGPIPE);
-    pthread_sigmask(SIG_BLOCK, &set, 0);
+    if (signal(SIGPIPE, SIG_BLOCK) == SIG_ERR) {
+        printf("sig_ign error");
+    } //this is wrong i think 
 
     start_listener(atoi(argv[1]), client_constructor);
 
     while(1) {
         size_t MAX = 1024;
-        char buffer[MAX];
-        memset(buffer, 0, MAX);
-        int r = read(0, buffer, MAX);
+        char *buffer[MAX];
+        memset(&buffer, 0, MAX);
+        int r = read(0, &buffer, MAX);
         if (r > 0) {
-            if (strcmp(&buffer[0], "s")) { //all matching into here? 
+            if (strcmp(buffer[0], "s")) { //all matching into here? 
                 fprintf(stderr, "%s", &buffer[0]);
                 //stop
                 client_control_stop();
-            } else if (strcmp(&buffer[0], "g")) {
+            } else if (strcmp(buffer[0], "g")) {
                 //resume 
                 fprintf(stderr, "g");
                 client_control_release();
-            } else if (strcmp(&buffer[0], "p")) {
+            } else if (strcmp(buffer[0], "p")) {
                 //print
                 char file[512];
-                sscanf(&buffer[1], "%s", file); //error check
+                sscanf(buffer[1], "%s", file); //error check
                 fprintf(stderr, "%s", file);
                 if (file != NULL) {
                     db_print(file);
@@ -390,10 +385,9 @@ int main(int argc, char *argv[]) {
 issues:
  - seg fault for clt-D 
  - seg fault for sigint
- - p doesn't do anything
- - seg fault when client exits 
- - seg fault when client disconnects
- 
+ - seg fault when client disconnects or exits 
+ - repl is always entering first case 
+
  questions:
   - how to send sigpipe for testing? 
   - how to exit? 
