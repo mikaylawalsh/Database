@@ -338,9 +338,8 @@ int main(int argc, char *argv[]) {
         int r = read(0, buffer, MAX);
         if (r > 0) {
             char *bufz;
-            char file[512];
+            char *file;
             char temp[512];
-            memset(file, 0, 512);
             memset(temp, 0, 512);
             strcpy(temp, &buffer[1]);
             file = strtok(buffer, "\t\n ");
