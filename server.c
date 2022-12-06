@@ -316,9 +316,14 @@ int main(int argc, char *argv[]) {
 
     sig_handler_t *sigh = sig_handler_constructor();
 
-    if (signal(SIGPIPE, SIG_BLOCK) == SIG_ERR) {
-        printf("sig_ign error");
-    } //this is wrong i think 
+    // if (signal(SIGPIPE, SIG_BLOCK) == SIG_ERR) {
+    //     printf("sig_ign error");
+    // } //this is wrong i think 
+
+    sigset_t set;
+    sigemptyset(&set);
+    sigaddset(&set, SIGPIPE);
+    pthread_sigmask(SIG_BLOCK, &set, 0);
 
     start_listener(atoi(argv[1]), client_constructor);
 
@@ -328,7 +333,7 @@ int main(int argc, char *argv[]) {
         memset(buffer, 0, MAX);
         int r = read(0, buffer, MAX);
         if (r > 0) {
-            if (strcmp(&buffer[0], "s")) {
+            if (strcmp(&buffer[0], "s")) { //all matching into here? 
                 fprintf(stderr, "%s", &buffer[0]);
                 //stop
                 client_control_stop();
