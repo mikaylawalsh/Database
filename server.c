@@ -342,7 +342,7 @@ int main(int argc, char *argv[]) {
             } else if (!strcmp(bufz, "p")) {
                 //print
                 char file[1];
-                //sscanf(buffer, "%s %s", file); //error check
+                //psscanf(buffer, "%s %s", file); //error check
                 //fprintf(stderr, "%s", file); 
                 if (file != NULL) {
                     db_print(file);
