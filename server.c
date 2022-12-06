@@ -341,6 +341,8 @@ int main(int argc, char *argv[]) {
             char file[20]; //make bigger?
             memset(file, 0, 20);
             sscanf(buffer, "%s %s", bufz, file);
+            fprintf(stderr, "b = %s\n", bufz);
+            fprintf(stderr, "f = %s\n", file);
             //bufz = strtok(buffer, "\t\n ");
             if (!strcmp(bufz, "s")) { 
                 printf("stopped\n");
