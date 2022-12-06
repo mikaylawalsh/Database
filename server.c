@@ -230,7 +230,7 @@ void thread_cleanup(void *arg) {
 
     //check if this is the last client 
     if (scontrol.num_client_threads == 0) {
-        pthread_cond_signal(scontrol.server_cond);
+        pthread_cond_signal(&scontrol.server_cond);
     }
 }
 
@@ -244,10 +244,10 @@ void thread_cleanup(void *arg) {
 void *monitor_signal(void *arg) {
     // TODO: Wait for a SIGINT to be sent to the server process and cancel
     // all client threads when one arrives.
-    sigset_t set;
+    sigset_t *set;
     set = (sigset_t *) arg;
 
-    if (sigwait(set, SIGINT) == 0) {
+    if (sigwait(&set, SIGINT) == 0) {
         delete_all();
     } else { 
         //error check
@@ -265,9 +265,10 @@ sig_handler_t *sig_handler_constructor() {
     sigemptyset(&sigint_handler->set);
     sigaddset(&sigint_handler->set, SIGINT);
     pthread_sigmask(SIG_BLOCK, &sigint_handler->set, 0);
-    pthread_create(&sigint_handler->thread, 0, monitor_signal, &setint_handler->set); //error check 
+    pthread_create(&sigint_handler->thread, 0, monitor_signal, &sigint_handler->set); //error check 
 
     return sigint_handler;
+}
 
 void sig_handler_destructor(sig_handler_t *sighandler) {
     // TODO: Free any resources allocated in sig_handler_constructor.
@@ -275,7 +276,7 @@ void sig_handler_destructor(sig_handler_t *sighandler) {
 
     pthread_cancel(sighandler->thread); //error check 
     pthread_join(sighandler->thread, 0); //use 0? 
-    free(signhandler);
+    free(sighandler);
 }
 
 // The arguments to the server should be the port number.
@@ -338,7 +339,7 @@ int main(int argc, char *argv[]) {
             server_accept = 0;
             pthread_mutex_unlock(&server_accept_mutex);
             delete_all();
-            pthread_cond_wait(scontrol.server_control, scontrol.server_mutex);  
+            pthread_cond_wait(&scontrol.server_cond, &scontrol.server_mutex);  
             db_cleanup();
 
             //exit
