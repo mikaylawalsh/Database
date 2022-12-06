@@ -345,7 +345,7 @@ int main(int argc, char *argv[]) {
                 client_control_stop();
             } else if (strcmp(tokens[0], "g")) {
                 //resume 
-                clinet_control_release();
+                cliet_control_release();
             } else if (strcmp(tokens[0], "p")) {
                 //print
                 if (tokens[1] != NULL) {
