@@ -348,8 +348,8 @@ int main(int argc, char *argv[]) {
             } else if (!strcmp(bufz, "p")) {
                 //print
                 char file[1];
+                printf("%s", &buffer[1]);
                 sscanf(&buffer[1], " %s", file); //not working 
-                fprintf(stderr, "%s", &buffer[1]);
                 if (file != NULL) {
                     db_print(file);
                 } else {
