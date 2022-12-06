@@ -340,6 +340,7 @@ int main(int argc, char *argv[]) {
                 //print
                 char file[512];
                 sscanf(&buffer[1], "%s", file); //error check
+                fprintf(stderr, "%s", file); 
                 if (file != NULL) {
                     db_print(file);
                 } else {
@@ -385,7 +386,7 @@ issues:
  - seg fault for clt-D 
  - seg fault for sigint
  - seg fault when client disconnects or exits 
- - repl is always entering first case 
+ - seg fault for p  
 
  questions:
   - how to send sigpipe for testing? 
