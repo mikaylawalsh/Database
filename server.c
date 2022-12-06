@@ -84,11 +84,9 @@ void client_control_wait() {
 
     pthread_mutex_lock(&ccontrol.go_mutex);
     ccontrol.stopped = 1;
-    pthread_mutex_unlock(&ccontrol.go_mutex);
     
     pthread_cond_wait(&ccontrol.go, &ccontrol.go_mutex); //when to lock
 
-    pthread_mutex_lock(&ccontrol.go_mutex);
     ccontrol.stopped = 0;
     pthread_mutex_unlock(&ccontrol.go_mutex);
 }
@@ -355,7 +353,9 @@ int main(int argc, char *argv[]) {
             server_accept = 0;
             pthread_mutex_unlock(&server_accept_mutex);
             delete_all();
+            pthread_mutex_lock(&scontrol.server_mutex);
             pthread_cond_wait(&scontrol.server_cond, &scontrol.server_mutex);  
+            pthread_mutex_unlock(&scontrol.server_mutex); 
             db_cleanup();
             exit(0);
         } else if (r < 0) {
@@ -378,15 +378,15 @@ int main(int argc, char *argv[]) {
 
 /*
 issues:
- - p doesn't do anything? parsing? 
- - dead lock maybe? issue with locking in query - the thing after i call it 
  - seg fault for clt-D 
  - seg fault for sigint
+ - p doesn't do anything 
+ - seg fault when client exits 
  
  questions:
-  - parsing for p? 
   - how to send sigpipe for testing? 
   - how to exit? 
   - need to cleanup and everything at end of main too? 
   - when to call client_control_wait? 
+  - print, stop, go statments? 
 */
