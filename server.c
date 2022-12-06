@@ -342,7 +342,7 @@ int main(int argc, char *argv[]) {
                 fprintf(stderr, "here"); 
                 sscanf(&buffer[1], " %s",file); //error check
                 if (file != NULL) {
-                    db_print(file);
+                    //db_print(file);
                 } else {
                     //db_print(NULL); 
                 }
