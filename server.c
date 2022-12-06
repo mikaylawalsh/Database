@@ -331,10 +331,10 @@ int main(int argc, char *argv[]) {
             char *bufz;
             bufz = strtok(buffer, "\t\n "); 
             if (!strcmp(bufz, "s")) { //all matching into here? 
-                printf("stopped");
+                printf("stopped\n");
                 client_control_stop();
             } else if (!strcmp(bufz, "g")) {
-                printf("resumed");
+                printf("resumed\n");
                 client_control_release();
             } else if (!strcmp(bufz, "p")) {
                 //print
