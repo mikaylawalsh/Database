@@ -344,7 +344,7 @@ int main(int argc, char *argv[]) {
                 if (file != NULL) {
                     db_print(file);
                 } else {
-                    db_print(NULL); 
+                    //db_print(NULL); 
                 }
             } else {
                 fprintf(stderr, "syntax error: please enter either s, g, or p\n");
