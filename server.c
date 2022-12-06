@@ -331,13 +331,13 @@ int main(int argc, char *argv[]) {
             char *bufz[1]; 
             bufz[0] = &buffer[0];
             fprintf(stderr, "%s", bufz[0]);
-            if (strcmp(bufz, "s")) { //all matching into here? 
+            if (strcmp(bufz[0], "s")) { //all matching into here? 
                 client_control_stop();
                 printf("stopped");
-            } else if (strcmp(bufz, "g")) {
+            } else if (strcmp(bufz[0], "g")) {
                 client_control_release();
                 printf("resumed");
-            } else if (strcmp(bufz, "p")) {
+            } else if (strcmp(bufz[0], "p")) {
                 //print
                 char file[512];
                 sscanf(&buffer[1], "%s", file); //error check
