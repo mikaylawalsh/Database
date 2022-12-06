@@ -328,11 +328,11 @@ int main(int argc, char *argv[]) {
         memset(buffer, 0, MAX);
         int r = read(0, buffer, MAX);
         if (r > 0) {
-            char bufz;
-            char file; 
+            char *bufz;
+            char *file; 
             bufz = strtok(buffer, "\t\n ");
             file = strtok(0, "\t\n ");
-            fprintf(stderr, "%s %s", )
+            fprintf(stderr, "%s %s", bufz, file);
             if (!strcmp(bufz, "s")) { //all matching into here? 
                 printf("stopped\n");
                 client_control_stop();
