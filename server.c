@@ -339,7 +339,7 @@ int main(int argc, char *argv[]) {
         if (r > 0) {
             char bufz[1];
             char file[20];
-            sscanf(&buffer, "%s %s", bufz, file); //not working 
+            sscanf(buffer, "%s %s", bufz, file); //not working 
             printf("%s", bufz);
             printf("%s", file);
             //bufz = strtok(buffer, "\t\n ");
