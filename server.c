@@ -321,9 +321,9 @@ int main(int argc, char *argv[]) {
     // } //this is wrong i think 
 
     sigset_t set;
-    sigemptyset(&set);
-    sigaddset(&set, SIGPIPE);
-    pthread_sigmask(SIG_BLOCK, &set, 0);
+    sigemptyset(&set);
+    sigaddset(&set, SIGPIPE);
+    pthread_sigmask(SIG_BLOCK, &set, 0);
 
     start_listener(atoi(argv[1]), client_constructor);
 
