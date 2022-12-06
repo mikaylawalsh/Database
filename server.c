@@ -342,6 +342,7 @@ int main(int argc, char *argv[]) {
                 fprintf(stderr, "here"); 
                 sscanf(&buffer[1], " %s",file); //error check
                 fprintf(stderr, "%s", file);
+                db_print(NULL);
                 if (file != NULL) {
                     //db_print(file);
                 } else {
