@@ -328,11 +328,8 @@ int main(int argc, char *argv[]) {
         memset(buffer, 0, MAX);
         int r = read(0, buffer, MAX);
         if (r > 0) {
-            char *bufz;
-            char *file; 
+            char bufz;
             bufz = strtok(buffer, "\t\n ");
-            file = strtok(0, "\t\n ");
-            fprintf(stderr, "%s %s", bufz, file);
             if (!strcmp(bufz, "s")) { //all matching into here? 
                 printf("stopped\n");
                 client_control_stop();
@@ -342,8 +339,8 @@ int main(int argc, char *argv[]) {
             } else if (!strcmp(bufz, "p")) {
                 //print
                 char file[1];
-                //psscanf(buffer, "%s %s", file); //error check
-                //fprintf(stderr, "%s", file); 
+                sscanf(&buffer[1], " %s",file); //error check
+                fprintf(stderr, "%s", file); 
                 if (file != NULL) {
                     db_print(file);
                 } else {
