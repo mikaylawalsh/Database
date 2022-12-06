@@ -297,7 +297,7 @@ int main(int argc, char *argv[]) {
     // thread to add itself to the thread list after the server's final
     // delete_all().
 
-    sig_handler_constructor(); //need to do anything w sigint handler
+    sig_handler_t sigh = sig_handler_constructor(); //need to do anything w sigint handler
 
     if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
         printf("sig_ign error");
@@ -336,13 +336,14 @@ int main(int argc, char *argv[]) {
         } else if (r == 0){ //revieced EOF - handle 
 
             //destroy sig
+            sig_handler_destructor(sigh);
             pthread_mutex_lock(&server_accept_mutex);
             server_accept = 0;
             pthread_mutex_unlock(&server_accept_mutex);
             delete_all();
             pthread_cond_wait(&scontrol.server_cond, &scontrol.server_mutex);  
             db_cleanup();
-
+            exit();
             //exit
         } else if (r < 0) {
             //error check read
@@ -350,14 +351,14 @@ int main(int argc, char *argv[]) {
     }
 
     //delete database when num of clients is 0
-    if (scontrol.num_client_threads == 0) {
-        db_cleanup();
-    }
+    // if (scontrol.num_client_threads == 0) {
+    //     db_cleanup();
+    // }
 
-    //set accepted to 0
-    pthread_mutex_lock(&server_accept_mutex);
-    server_accept = 0;
-    pthread_mutex_unlock(&server_accept_mutex);
+    // //set accepted to 0
+    // pthread_mutex_lock(&server_accept_mutex);
+    // server_accept = 0;
+    // pthread_mutex_unlock(&server_accept_mutex);
 
     return 0;
 }
