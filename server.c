@@ -82,15 +82,15 @@ void client_control_wait() {
     // TODO: Block the calling thread until the main thread calls
     // client_control_release(). See the client_control_t struct.
 
-    pthread_mutex_lock(&ccontrol->mutex);
+    pthread_mutex_lock(&ccontrol.mutex);
     ccontrol.stopped = 1;
-    pthread_mutex_unlock(&ccontrol->mutex);
+    pthread_mutex_unlock(&ccontrol.mutex);
     
-    pthread_cond_wait(&ccontrol.go, &ccontrol->mutex); //when to lock
+    pthread_cond_wait(&ccontrol.go, &ccontrol.mutex); //when to lock
 
-    pthread_mutex_lock(&ccontrol->mutex);
+    pthread_mutex_lock(&ccontrol.mutex);
     ccontrol.stopped = 0;
-    pthread_mutex_unlock(&ccontrol->mutex);
+    pthread_mutex_unlock(&ccontrol.mutex);
 }
 
 // Called by main thread to stop client threads
@@ -106,9 +106,9 @@ void client_control_release() {
     // to continue. See the client_control_t struct.
 
     //need to lock? 
-    pthread_mutex_lock(&ccontrol->mutex);
+    pthread_mutex_lock(&ccontrol.mutex);
     pthread_cond_signal(ccontrol.go);
-    pthread_mutex_unlock(&ccontrol->mutex);
+    pthread_mutex_unlock(&ccontrol.mutex);
 }
 
 // Called by listener (in comm.c) to create a new client thread
