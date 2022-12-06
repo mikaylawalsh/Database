@@ -247,7 +247,7 @@ void *monitor_signal(void *arg) {
     sigset_t *set;
     set = (sigset_t *) arg;
 
-    if (sigwait(set, SIGINT) == 0) {
+    if (sigwait(set, *SIGINT) == 0) {
         delete_all();
     } else { 
         //error check
