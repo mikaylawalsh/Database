@@ -113,14 +113,11 @@ void client_constructor(FILE *cxstr) {
     } 
     
     int err;
-    if ((err = pthread_create(&c->thread, 0, run_client, c)) != 0) { //what goes in here
+    if ((err = pthread_create(&c->thread, 0, run_client, c)) != 0) {
         handle_error_en(err, "pthread create");
     }
-    // if ((err = pthread_join(c->thread, 0)) != 0) {
-    //     handle_error_en(err, "pthread join");
-    // }
     
-    c->cxstr = cxstr; //do i need to open this
+    c->cxstr = cxstr;
     c->prev = NULL;
     c->next = NULL;
     if ((err = pthread_detach(c->thread)) != 0) {
@@ -134,8 +131,6 @@ void client_destructor(client_t *client) {
     // be freed here!
 
     comm_shutdown(client->cxstr);
-
-    //is this necessary? might cause segfault. -- make list circular to avoid this issue 
 
     pthread_mutex_lock(&thread_list_mutex);
     client_t *prev = client->prev;
@@ -172,7 +167,6 @@ void *run_client(void *arg) {
         
         client_t *c = (client_t *) arg;
 
-        //not sure if this is correct
         pthread_mutex_lock(&thread_list_mutex);
         if (thread_list_head == NULL) {
             thread_list_head = c;
@@ -185,7 +179,6 @@ void *run_client(void *arg) {
         }
         pthread_mutex_unlock(&thread_list_mutex);
 
-        //increment num
         pthread_mutex_lock(&scontrol.server_mutex);
         scontrol.num_client_threads++;
         pthread_mutex_unlock(&scontrol.server_mutex);
@@ -205,7 +198,7 @@ void *run_client(void *arg) {
 
         pthread_cleanup_pop(1); //not sure what to pass in
 
-        return c; //what to return 
+        //return c; //what to return 
     }
     return NULL;
 }
@@ -234,6 +227,11 @@ void thread_cleanup(void *arg) {
     //make thread safe
 
     client_destructor(c);
+
+    //check if this is the last client 
+    if (scontrol.num_client_threads == 0) {
+        pthread_cond_signal(scontrol.server_cond);
+    }
 }
 
 // Code executed by the signal handler thread. For the purpose of this
@@ -246,18 +244,38 @@ void thread_cleanup(void *arg) {
 void *monitor_signal(void *arg) {
     // TODO: Wait for a SIGINT to be sent to the server process and cancel
     // all client threads when one arrives.
+    sigset_t set;
+    set = (sigset_t *) arg;
+
+    if (sigwait(set, SIGINT) == 0) {
+        delete_all();
+    } else { 
+        //error check
+    }
     return NULL;
 }
 
 sig_handler_t *sig_handler_constructor() {
     // TODO: Create a thread to handle SIGINT. The thread that this function
     // creates should be the ONLY thread that ever responds to SIGINT.
-    return NULL;
-}
+
+    sig_handler_t *sigint_handler;
+    sigint_handler = malloc(sizeof(sig_handler_t));
+
+    sigemptyset(&sigint_handler->set);
+    sigaddset(&sigint_handler->set, SIGINT);
+    pthread_sigmask(SIG_BLOCK, &sigint_handler->set, 0);
+    pthread_create(&sigint_handler->thread, 0, monitor_signal, &setint_handler->set); //error check 
+
+    return sigint_handler;
 
 void sig_handler_destructor(sig_handler_t *sighandler) {
     // TODO: Free any resources allocated in sig_handler_constructor.
     // Cancel and join with the signal handler's thread. 
+
+    pthread_cancel(sighandler->thread); //error check 
+    pthread_join(sighandler->thread, 0); //use 0? 
+    free(signhandler);
 }
 
 // The arguments to the server should be the port number.
@@ -277,6 +295,8 @@ int main(int argc, char *argv[]) {
     // thread to add itself to the thread list after the server's final
     // delete_all().
 
+    sig_handler_constructor(); //need to do anything w sigint handler
+
     if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
         printf("sig_ign error");
     }
@@ -287,7 +307,8 @@ int main(int argc, char *argv[]) {
         size_t MAX = 1024;
         char buffer[MAX];
         memset(buffer, 0, MAX);
-        if (read(0, buffer, MAX) != 0) {
+        int r = read(0, buffer, MAX);
+        if (r > 0) {
             //parse
             char *token;
             char *tokens[512];
@@ -301,7 +322,6 @@ int main(int argc, char *argv[]) {
                 i++;
                 token = strtok(0, "\t\n ");
             }
-        
             if (strcmp(tokens[0], "s")) {
                 //stop 
             } else if (strcmp(tokens[0], "g")) {
@@ -311,9 +331,19 @@ int main(int argc, char *argv[]) {
             } else {
                 fprintf(stderr, "syntax error: please enter either s, g, or p");
             }
-        } else {
-            //revieced EOF - handle 
-            //recieved error - handle 
+        } else if (r == 0){ //revieced EOF - handle 
+
+            //destroy sig
+            pthread_mutex_lock(&server_accept_mutex);
+            server_accept = 0;
+            pthread_mutex_unlock(&server_accept_mutex);
+            delete_all();
+            pthread_cond_wait(scontrol.server_control, scontrol.server_mutex);  
+            db_cleanup();
+
+            //exit
+        } else if (r < 0) {
+            //error check read
         }
     }
 
