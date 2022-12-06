@@ -328,15 +328,15 @@ int main(int argc, char *argv[]) {
         memset(buffer, 0, MAX);
         int r = read(0, buffer, MAX);
         if (r > 0) {
-            char bufz;
+            char *bufz;
             bufz = strtok(buffer, "\t\n ");
-            if (!strcmp(bufz, "s")) { //all matching into here? 
+            if (!strcmp(&bufz, "s")) { //all matching into here? 
                 printf("stopped\n");
                 client_control_stop();
-            } else if (!strcmp(bufz, "g")) {
+            } else if (!strcmp(&bufz, "g")) {
                 printf("resumed\n");
                 client_control_release();
-            } else if (!strcmp(bufz, "p")) {
+            } else if (!strcmp(&bufz, "p")) {
                 //print
                 char file[1];
                 sscanf(&buffer[1], " %s",file); //error check
