@@ -329,10 +329,12 @@ int main(int argc, char *argv[]) {
         int r = read(0, buffer, MAX);
         if (r > 0) {
             if (strcmp(&buffer[0], "s")) {
+                fprintf(stderr, "s");
                 //stop
                 client_control_stop();
             } else if (strcmp(&buffer[0], "g")) {
                 //resume 
+                fprintf(stderr, "g");
                 client_control_release();
             } else if (strcmp(&buffer[0], "p")) {
                 //print
