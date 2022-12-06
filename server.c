@@ -339,8 +339,8 @@ int main(int argc, char *argv[]) {
         if (r > 0) {
             char *bufz;
             printf("%s", &buffer[1]);
-            char file[1];
-            sscanf(&buffer[1], " %s", file); //not working 
+            char file[512];
+            sscanf(&buffer[1], "%*s %s", file); //not working 
             printf("%s", buffer);
             bufz = strtok(buffer, "\t\n ");
             if (!strcmp(bufz, "s")) { 
