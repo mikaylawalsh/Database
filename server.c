@@ -328,8 +328,8 @@ int main(int argc, char *argv[]) {
         memset(buffer, 0, MAX);
         int r = read(0, buffer, MAX);
         if (r > 0) {
-            char *bufz;
-            char *file;
+            char *bufz[];
+            char *file[];
             sscanf(buffer, "%s %s", bufz, file); //error check
             //fprintf(stderr, "%s", file); 
             //bufz = strtok(buffer, "\t\n "); 
