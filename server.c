@@ -330,30 +330,18 @@ int main(int argc, char *argv[]) {
         memset(buffer, 0, MAX);
         int r = read(0, buffer, MAX);
         if (r > 0) {
-            //parse
-            char *token;
-            char *tokens[512];
-            int i = 0;
-            token = strtok(buffer, "\t\n ");
-            if (token == NULL) {
-                continue; //??
-            }
-            while (token != NULL) {
-                tokens[i] = token;
-                i++;
-                token = strtok(0, "\t\n ");
-            }
-            if (strcmp(tokens[0], "s")) {
+            if (strcmp(buffer[0], "s")) {
                 //stop
                 client_control_stop();
-            } else if (strcmp(tokens[0], "g")) {
+            } else if (strcmp(buffer[0], "g")) {
                 //resume 
                 client_control_release();
-            } else if (strcmp(tokens[0], "p")) {
+            } else if (strcmp(buffer[0], "p")) {
                 //print
-                if (tokens[1] != NULL) {
-                    //sscanf(tokens[1]);
-                    db_print(tokens[1]);
+                char file[512];
+                sscanf(&buffer[1], " ", file); //error check
+                if (file != NULL) {
+                    db_print(file);
                 } else {
                     db_print(NULL); 
                 }
