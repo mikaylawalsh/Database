@@ -81,6 +81,7 @@ void thread_cleanup(void *arg);
 void client_control_wait() {
     // TODO: Block the calling thread until the main thread calls
     // client_control_release(). See the client_control_t struct.
+    
 }
 
 // Called by main thread to stop client threads
@@ -297,7 +298,7 @@ int main(int argc, char *argv[]) {
     // thread to add itself to the thread list after the server's final
     // delete_all().
 
-    sig_handler_t *sigh = sig_handler_constructor(); //need to do anything w sigint handler
+    sig_handler_t *sigh = sig_handler_constructor();
 
     if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
         printf("sig_ign error");
@@ -325,17 +326,22 @@ int main(int argc, char *argv[]) {
                 token = strtok(0, "\t\n ");
             }
             if (strcmp(tokens[0], "s")) {
-                //stop 
+                //stop
+                client_control_stop();
             } else if (strcmp(tokens[0], "g")) {
                 //resume 
+                clinet_control_release();
             } else if (strcmp(tokens[0], "p")) {
                 //print 
+                db_print(NULL); 
+                
+                //check if second arg is file 
+
             } else {
                 fprintf(stderr, "syntax error: please enter either s, g, or p");
             }
         } else if (r == 0){ //revieced EOF - handle 
 
-            //destroy sig
             sig_handler_destructor(sigh);
             pthread_mutex_lock(&server_accept_mutex);
             server_accept = 0;
@@ -344,21 +350,32 @@ int main(int argc, char *argv[]) {
             pthread_cond_wait(&scontrol.server_cond, &scontrol.server_mutex);  
             db_cleanup();
             exit(0);
-            //exit
         } else if (r < 0) {
             //error check read
         }
     }
 
     //delete database when num of clients is 0
-    // if (scontrol.num_client_threads == 0) {
-    //     db_cleanup();
-    // }
+    if (scontrol.num_client_threads == 0) {
+        db_cleanup();
+    }
 
-    // //set accepted to 0
-    // pthread_mutex_lock(&server_accept_mutex);
-    // server_accept = 0;
-    // pthread_mutex_unlock(&server_accept_mutex);
+    //set accepted to 0
+    pthread_mutex_lock(&server_accept_mutex);
+    server_accept = 0;
+    pthread_mutex_unlock(&server_accept_mutex);
 
     return 0;
 }
+
+/*
+issues:
+ - seg fault for sigint 
+ - dead lock maybe? issue with locking in delete
+ 
+ questions:
+  - how to send EOF and sigpipe for testing? 
+  - how to exit? 
+  - need to cleanup and everything at end of main too? 
+  - when to call client_control_wait? 
+*/
