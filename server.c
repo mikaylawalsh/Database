@@ -81,19 +81,34 @@ void thread_cleanup(void *arg);
 void client_control_wait() {
     // TODO: Block the calling thread until the main thread calls
     // client_control_release(). See the client_control_t struct.
+
+    pthread_mutex_lock(&ccontrol->mutex);
+    ccontrol.stopped = 1;
+    pthread_mutex_unlock(&ccontrol->mutex);
     
+    pthread_cond_wait(&ccontrol.go, &ccontrol->mutex); //when to lock
+
+    pthread_mutex_lock(&ccontrol->mutex);
+    ccontrol.stopped = 0;
+    pthread_mutex_unlock(&ccontrol->mutex);
 }
 
 // Called by main thread to stop client threads
 void client_control_stop() {
     // TODO: Ensure that the next time client threads call client_control_wait()
     // at the top of the event loop in run_client, they will block.
+
 }
 
 // Called by main thread to resume client threads
 void client_control_release() {
     // TODO: Allow clients that are blocked within client_control_wait()
     // to continue. See the client_control_t struct.
+
+    //need to lock? 
+    pthread_mutex_lock(&ccontrol->mutex);
+    pthread_cond_signal(ccontrol.go);
+    pthread_mutex_unlock(&ccontrol->mutex);
 }
 
 // Called by listener (in comm.c) to create a new client thread
@@ -332,11 +347,12 @@ int main(int argc, char *argv[]) {
                 //resume 
                 clinet_control_release();
             } else if (strcmp(tokens[0], "p")) {
-                //print 
-                db_print(NULL); 
-                
-                //check if second arg is file 
-
+                //print
+                if (tokens[1] != NULL) {
+                    db_print(tokens[1]);
+                } else {
+                    db_print(NULL); 
+                }
             } else {
                 fprintf(stderr, "syntax error: please enter either s, g, or p");
             }
@@ -371,10 +387,11 @@ int main(int argc, char *argv[]) {
 /*
 issues:
  - seg fault for sigint 
- - dead lock maybe? issue with locking in delete
+ - dead lock maybe? issue with locking in query - the thing after i call it 
+ - seg fault for clt-D
  
  questions:
-  - how to send EOF and sigpipe for testing? 
+  - how to send sigpipe for testing? 
   - how to exit? 
   - need to cleanup and everything at end of main too? 
   - when to call client_control_wait? 
