@@ -316,9 +316,9 @@ int main(int argc, char *argv[]) {
 
     sig_handler_t *sigh = sig_handler_constructor();
 
-    if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
+    if (signal(SIGPIPE, SIG_BLOCK) == SIG_ERR) {
         printf("sig_ign error");
-    }
+    } //this is wrong i think 
 
     start_listener(atoi(argv[1]), client_constructor);
 
@@ -361,6 +361,8 @@ int main(int argc, char *argv[]) {
         } else if (r < 0) {
             //error check read
         }
+
+        //need to call cond wait somewhere in here for sigint
     }
 
     //delete database when num of clients is 0
