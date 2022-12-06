@@ -324,23 +324,21 @@ int main(int argc, char *argv[]) {
 
     while(1) {
         size_t MAX = 1024;
-        char *buffer[MAX];
-        memset(&buffer, 0, MAX);
-        int r = read(0, &buffer, MAX);
+        char buffer[MAX];
+        memset(buffer, 0, MAX);
+        int r = read(0, buffer, MAX);
         if (r > 0) {
-            if (strcmp(buffer[0], "s")) { //all matching into here? 
-                fprintf(stderr, "%s", buffer[0]);
-                //stop
+            char bufz[] = buffer[0];
+            if (strcmp(bufz, "s")) { //all matching into here? 
                 client_control_stop();
-            } else if (strcmp(buffer[0], "g")) {
-                //resume 
-                fprintf(stderr, "g");
+                printf("stopped");
+            } else if (strcmp(bufz, "g")) {
                 client_control_release();
-            } else if (strcmp(buffer[0], "p")) {
+                printf("resumed");
+            } else if (strcmp(bufz, "p")) {
                 //print
                 char file[512];
-                sscanf(buffer[1], "%s", file); //error check
-                fprintf(stderr, "%s", file);
+                sscanf(&buffer[1], "%s", file); //error check
                 if (file != NULL) {
                     db_print(file);
                 } else {
