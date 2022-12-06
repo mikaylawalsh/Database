@@ -328,15 +328,15 @@ int main(int argc, char *argv[]) {
         memset(buffer, 0, MAX);
         int r = read(0, buffer, MAX);
         if (r > 0) {
-            if (strcmp(&buffer[0], "s")) {
+            if (&buffer[0] == "s") {
                 fprintf(stderr, "%s", &buffer[0]);
                 //stop
                 client_control_stop();
-            } else if (strcmp(&buffer[0], "g")) {
+            } else if (&buffer[0] == "g") {
                 //resume 
-                fprintf(stderr, "g");
+                fprintf(stderr, "here");
                 client_control_release();
-            } else if (strcmp(&buffer[0], "p")) {
+            } else if (&buffer[0] == "p") {
                 //print
                 char file[512];
                 sscanf(&buffer[1], "%s", file); //error check
