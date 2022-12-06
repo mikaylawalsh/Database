@@ -339,6 +339,7 @@ int main(int argc, char *argv[]) {
         if (r > 0) {
             char *bufz;
             bufz = strtok(buffer, "\t\n ");
+            printf("%s", &buffer[1]);
             if (!strcmp(bufz, "s")) { 
                 printf("stopped\n");
                 client_control_stop();
@@ -348,7 +349,6 @@ int main(int argc, char *argv[]) {
             } else if (!strcmp(bufz, "p")) {
                 //print
                 char file[1];
-                printf("%s", &buffer[1]);
                 sscanf(&buffer[1], " %s", file); //not working 
                 if (file != NULL) {
                     db_print(file);
