@@ -330,17 +330,20 @@ int main(int argc, char *argv[]) {
         if (r > 0) {
             char *bufz[1]; 
             bufz[0] = &buffer[0];
-            fprintf(stderr, "%s", bufz[0]);
             if (strcmp(bufz[0], "s")) { //all matching into here? 
+                fprintf(stderr, "%s", "s here");
                 client_control_stop();
                 printf("stopped");
             } else if (strcmp(bufz[0], "g")) {
+                fprintf(stderr, "%s", "g here");
                 client_control_release();
                 printf("resumed");
             } else if (strcmp(bufz[0], "p")) {
                 //print
+                fprintf(stderr, "%s", "p here");
                 char file[512];
                 sscanf(&buffer[1], "%s", file); //error check
+                fprintf(stderr, "%s", file);
                 if (file != NULL) {
                     db_print(file);
                 } else {
