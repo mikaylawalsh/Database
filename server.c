@@ -328,8 +328,9 @@ int main(int argc, char *argv[]) {
         memset(buffer, 0, MAX);
         int r = read(0, buffer, MAX);
         if (r > 0) {
-            fprintf(stderr, "%s", &buffer[0]);
-            fprintf(stderr, "%s", &buffer[1]);
+            char *bufz;
+            bufz = strtok(buffer, "\t\n "); 
+            fprintf(stderr, "%s", bufz);
             if (!strcmp(buffer, "s")) { //all matching into here? 
                 fprintf(stderr, "%s", "s here");
                 client_control_stop();
