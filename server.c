@@ -337,10 +337,12 @@ int main(int argc, char *argv[]) {
         memset(buffer, 0, MAX);
         int r = read(0, buffer, MAX);
         if (r > 0) {
+
             char bufz[1];
             char file[512];
             memset(file, 0, 512);
             sscanf(buffer, "%s %s", bufz, file);
+
             if (!strcmp(bufz, "s")) { 
                 printf("stopped\n");
                 client_control_stop();
@@ -348,13 +350,7 @@ int main(int argc, char *argv[]) {
                 printf("resumed\n");
                 client_control_release();
             } else if (!strcmp(bufz, "p")) {
-                //print
                 db_print(file);
-                // if (file != NULL) {
-                //     db_print(file);
-                // } else {
-                //     db_print(NULL); 
-                // }
             } else {
                 fprintf(stderr, "syntax error: please enter either s, g, or p\n");
             }

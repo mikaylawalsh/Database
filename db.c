@@ -234,6 +234,7 @@ void db_print_recurs(node_t *node, int lvl, FILE *out) {
     // print out the current node
     if (node == NULL) {
         fprintf(out, "(null)\n");
+        pthread_rwlock_unlock(&node->lock);
         return;
     }
     pthread_rwlock_rdlock(&node->lock);
