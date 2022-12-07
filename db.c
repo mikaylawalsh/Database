@@ -116,7 +116,7 @@ int db_remove(char *name) {
     if ((dnode = search(name, &head, &parent, l_write)) == 0) {
         // it's not there
         pthread_rwlock_unlock(&parent->lock);
-        pthread_rwlock_unlock(&dnode->lock);
+        //pthread_rwlock_unlock(&dnode->lock);
         return (0);
     }
     //on return from search, if result is none zero, parent and dnode are locked

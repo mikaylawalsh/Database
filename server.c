@@ -398,8 +398,7 @@ int main(int argc, char *argv[]) {
 
 /*
 issues:
- - sigint not doing anything 
- - stop, wait, resume check
+ - deleting something not in db causes seg fault in server 
 
  questions:
   - when to call client_control_wait? 
