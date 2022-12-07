@@ -274,13 +274,12 @@ void *monitor_signal(void *arg) {
     // all client threads when one arrives.
     sigset_t *set;
     set = (sigset_t *) arg;
-    int sig = 0;
+    int sig;
     while(1) {
         if (sigwait(set, &sig) == 0) {
             if (sig == SIGINT) {
                 printf("sigint received");
                 delete_all(); //lcok thread list 
-                return NULL;
             }
         } else { 
             //error check
@@ -423,8 +422,8 @@ int main(int argc, char *argv[]) {
 
     pthread_cancel(listener);
     pthread_join(listener, 0);
-    
-    pthread_exit((void *) 0);
+
+    //pthread_exit((void *) 0);
 
     return 0;
 }
