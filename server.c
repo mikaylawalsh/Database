@@ -98,7 +98,6 @@ void client_control_stop() {
     ccontrol.stopped = 1;
     pthread_mutex_unlock(&ccontrol.go_mutex);
     printf("stopped\n");
-    client_control_wait();
 }
 
 // Called by main thread to resume client threads
@@ -206,6 +205,7 @@ void *run_client(void *arg) {
             if (comm_serve(c->cxstr, response, command) == -1) { //get the command 
                 break;
             }
+            client_control_wait();
             interpret_command(command, response, 512); //gets the response
         }
 
