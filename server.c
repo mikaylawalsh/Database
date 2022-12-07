@@ -171,8 +171,17 @@ void *run_client(void *arg) {
         client_t *c = (client_t *) arg;
 
         pthread_mutex_lock(&thread_list_mutex);
-        if (thread_list_head == NULL) {
+        if (thread_list_head == NULL) { //empty list 
             thread_list_head = c;
+            c->prev = c;
+            c->next = c;
+        } else if (thread_list_head->next == thread_list_head) {
+            client_t *old = thread_list_head;
+            thread_list_head = c;
+            c->next = old;
+            c->prev = old;
+            old->next = c;
+            old->prev = c;
         } else {
             client_t *old = thread_list_head;
             thread_list_head = c;
