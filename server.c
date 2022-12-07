@@ -232,19 +232,19 @@ void thread_cleanup(void *arg) {
 
     //remove 
     pthread_mutex_lock(&thread_list_mutex);
-    client_t *prev = client->prev;
-    client_t *next = client->next;
+    client_t *prev = c->prev;
+    client_t *next = c->next;
     if (prev != NULL && next != NULL) {
         next->prev = prev;
         prev->next = next;
-        client->prev = NULL;
-        client->next = NULL;
-        if (thread_list_head == client) {
+        c->prev = NULL;
+        c->next = NULL;
+        if (thread_list_head == c) {
             thread_list_head = next;
         }
     } else {
-        client->prev = NULL;
-        client->next = NULL;
+        c->prev = NULL;
+        c->next = NULL;
         thread_list_head = NULL; 
     }
     pthread_mutex_unlock(&thread_list_mutex);
