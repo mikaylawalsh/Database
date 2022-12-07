@@ -220,9 +220,6 @@ void delete_all() {
     // TODO: Cancel every thread in the client thread list with the
     // pthread_cancel function.
     client_t *cur = thread_list_head;
-    if (cur == NULL) {
-        return;
-    }
     do { 
         int err; 
         if ((err = pthread_cancel(cur->thread)) != 0) {
@@ -353,49 +350,6 @@ int main(int argc, char *argv[]) {
 
     pthread_t listener = start_listener(atoi(argv[1]), client_constructor);
 
-    // while(1) {
-    //     size_t MAX = 1024;
-    //     char buffer[MAX];
-    //     memset(buffer, 0, MAX);
-    //     int r = read(0, buffer, MAX);
-    //     if (r > 0) {
-
-    //         char bufz[1];
-    //         char file[512];
-    //         memset(file, 0, 512);
-    //         sscanf(buffer, "%s %s", bufz, file);
-
-    //         if (!strcmp(bufz, "s")) { 
-    //             printf("stopped\n");
-    //             //client_control_wait();
-    //             client_control_stop();
-    //         } else if (!strcmp(bufz, "g")) {
-    //             printf("resumed\n");
-    //             client_control_release();
-    //         } else if (!strcmp(bufz, "p")) {
-    //             db_print(file);
-    //         } else {
-    //             fprintf(stderr, "syntax error: please enter either s, g, or p\n");
-    //         }
-    //     } else if (r == 0) { //revieced EOF - handle 
-
-    //         sig_handler_destructor(sigh);
-    //         pthread_mutex_lock(&server_accept_mutex);
-    //         server_accept = 0;
-    //         delete_all();
-    //         pthread_mutex_unlock(&server_accept_mutex);
-    //         pthread_mutex_lock(&scontrol.server_mutex);
-    //         while(scontrol.num_client_threads > 0) {
-    //             pthread_cond_wait(&scontrol.server_cond, &scontrol.server_mutex); 
-    //         } 
-    //         pthread_mutex_unlock(&scontrol.server_mutex); 
-    //         db_cleanup();
-    //         pthread_exit((void *) 0);
-    //     } else if (r < 0) {
-    //         //error check read
-    //     }
-    // }
-
     size_t MAX = 1024;
     char buffer[MAX];
     memset(buffer, 0, MAX);
@@ -434,14 +388,14 @@ int main(int argc, char *argv[]) {
     pthread_cancel(listener);
     pthread_join(listener, 0);
 
-    //pthread_exit((void *) 0);
+    printf("exiting database");
+    pthread_exit((void *) 0);
 
     return 0;
 }
 
 /*
 issues:
- - seg fault for clt-D 
  - seg fault for sigint
  - stop, wait, resume check
 
