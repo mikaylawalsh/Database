@@ -354,6 +354,7 @@ int main(int argc, char *argv[]) {
     char buffer[MAX];
     memset(buffer, 0, MAX);
     while (read(0, buffer, MAX) > 0) {
+        printf("%s", buffer);
         if (buffer != NULL) {
             char bufz[1];
             char file[512];
