@@ -166,9 +166,8 @@ void *run_client(void *arg) {
     // You will need to modify this when implementing functionality for stop and go!
 
     //make sure server is still accepting clients
+    client_t *c = (client_t *) arg;
     if (server_accept == 1) {
-        
-        client_t *c = (client_t *) arg;
 
         pthread_mutex_lock(&thread_list_mutex);
         if (thread_list_head == NULL) { //empty list 
