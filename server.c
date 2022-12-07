@@ -211,6 +211,8 @@ void *run_client(void *arg) {
         pthread_cleanup_pop(1); //not sure what to pass in
 
         //return c; //what to return 
+    } else {
+        client_destructor(c);
     }
     return NULL;
 }
