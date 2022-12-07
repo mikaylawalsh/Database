@@ -278,9 +278,9 @@ void *monitor_signal(void *arg) {
     set = (sigset_t *) arg;
     int sig;
     while(1) {
-        if (num_client_threads == 0) {
+        if (scontrol.num_client_threads == 0) {
             printf(" sigint received. no clients to terminate.\n");
-            return;
+            return NULL;
         }
         if (sigwait(set, &sig) == 0) {
             if (sig == SIGINT) {
