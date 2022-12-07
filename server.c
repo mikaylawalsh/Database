@@ -282,7 +282,6 @@ void *monitor_signal(void *arg) {
             if (sig == SIGINT) {
                 if (scontrol.num_client_threads == 0) {
                     printf(" sigint received. no clients to terminate.\n");
-                    return NULL;
                 } else {
                     printf(" sigint received. terminating all clients.\n");
                     pthread_mutex_lock(&thread_list_mutex);
