@@ -81,14 +81,12 @@ void thread_cleanup(void *arg);
 void client_control_wait() {
     // TODO: Block the calling thread until the main thread calls
     // client_control_release(). See the client_control_t struct.
-
     pthread_mutex_lock(&ccontrol.go_mutex);
-    ccontrol.stopped = 1;
-    
-    pthread_cond_wait(&ccontrol.go, &ccontrol.go_mutex); //when to lock
-
-    ccontrol.stopped = 0;
-    pthread_mutex_unlock(&ccontrol.go_mutex);
+    pthread_cleanup_push(pthread_mutex_unlock, &ccontrol.go_mutex);
+    while (ccontrol.stopped == 1) {
+        pthread_cond_wait(&ccontrol.go, &ccontrol.go_mutex); //when to lock
+    }
+    pthread_cleanup_pop(1);
 }
 
 // Called by main thread to stop client threads
@@ -96,6 +94,9 @@ void client_control_stop() {
     // TODO: Ensure that the next time client threads call client_control_wait()
     // at the top of the event loop in run_client, they will block.
 
+    pthread_mutex_lock(&ccontrol.go_mutex);
+    ccontrol.stopped = 1;
+    pthread_mutex_unlock(&ccontrol.go_mutex);
 }
 
 // Called by main thread to resume client threads
@@ -105,7 +106,8 @@ void client_control_release() {
 
     //need to lock? 
     pthread_mutex_lock(&ccontrol.go_mutex);
-    pthread_cond_signal(&ccontrol.go);
+    ccontrol.stopped = 0;
+    pthread_cond_broadcast(&ccontrol.go);
     pthread_mutex_unlock(&ccontrol.go_mutex);
 }
 
@@ -341,59 +343,85 @@ int main(int argc, char *argv[]) {
 
     start_listener(atoi(argv[1]), client_constructor);
 
-    while(1) {
-        size_t MAX = 1024;
-        char buffer[MAX];
-        memset(buffer, 0, MAX);
-        int r = read(0, buffer, MAX);
-        if (r > 0) {
+    // while(1) {
+    //     size_t MAX = 1024;
+    //     char buffer[MAX];
+    //     memset(buffer, 0, MAX);
+    //     int r = read(0, buffer, MAX);
+    //     if (r > 0) {
 
-            char bufz[1];
-            char file[512];
-            memset(file, 0, 512);
-            sscanf(buffer, "%s %s", bufz, file);
+    //         char bufz[1];
+    //         char file[512];
+    //         memset(file, 0, 512);
+    //         sscanf(buffer, "%s %s", bufz, file);
 
-            if (!strcmp(bufz, "s")) { 
-                printf("stopped\n");
-                client_control_stop();
-            } else if (!strcmp(bufz, "g")) {
-                printf("resumed\n");
-                client_control_release();
-            } else if (!strcmp(bufz, "p")) {
-                db_print(file);
-            } else {
-                fprintf(stderr, "syntax error: please enter either s, g, or p\n");
-            }
-        } else if (r == 0) { //revieced EOF - handle 
+    //         if (!strcmp(bufz, "s")) { 
+    //             printf("stopped\n");
+    //             //client_control_wait();
+    //             client_control_stop();
+    //         } else if (!strcmp(bufz, "g")) {
+    //             printf("resumed\n");
+    //             client_control_release();
+    //         } else if (!strcmp(bufz, "p")) {
+    //             db_print(file);
+    //         } else {
+    //             fprintf(stderr, "syntax error: please enter either s, g, or p\n");
+    //         }
+    //     } else if (r == 0) { //revieced EOF - handle 
 
-            sig_handler_destructor(sigh);
-            pthread_mutex_lock(&server_accept_mutex);
-            server_accept = 0;
-            delete_all();
-            pthread_mutex_unlock(&server_accept_mutex);
-            pthread_mutex_lock(&scontrol.server_mutex);
-            while(scontrol.num_client_threads > 0) {
-                pthread_cond_wait(&scontrol.server_cond, &scontrol.server_mutex); 
-            } 
-            pthread_mutex_unlock(&scontrol.server_mutex); 
-            db_cleanup();
-            pthread_exit((void *) 0);
-        } else if (r < 0) {
-            //error check read
+    //         sig_handler_destructor(sigh);
+    //         pthread_mutex_lock(&server_accept_mutex);
+    //         server_accept = 0;
+    //         delete_all();
+    //         pthread_mutex_unlock(&server_accept_mutex);
+    //         pthread_mutex_lock(&scontrol.server_mutex);
+    //         while(scontrol.num_client_threads > 0) {
+    //             pthread_cond_wait(&scontrol.server_cond, &scontrol.server_mutex); 
+    //         } 
+    //         pthread_mutex_unlock(&scontrol.server_mutex); 
+    //         db_cleanup();
+    //         pthread_exit((void *) 0);
+    //     } else if (r < 0) {
+    //         //error check read
+    //     }
+    // }
+
+    size_t MAX = 1024;
+    char buffer[MAX];
+    memset(buffer, 0, MAX);
+    while (read(0, buffer, MAX) > 0) {
+        char bufz[1];
+        char file[512];
+        memset(file, 0, 512);
+        sscanf(buffer, "%s %s", bufz, file);
+
+        if (!strcmp(bufz, "s")) { 
+            printf("stopped\n");
+            //client_control_wait();
+            client_control_stop();
+        } else if (!strcmp(bufz, "g")) {
+            printf("resumed\n");
+            client_control_release();
+        } else if (!strcmp(bufz, "p")) {
+            db_print(file);
+        } else {
+            fprintf(stderr, "syntax error: please enter either s, g, or p\n");
         }
-
-        //need to call cond wait somewhere in here for sigint
     }
 
-    //delete database when num of clients is 0
-    if (scontrol.num_client_threads == 0) {
-        db_cleanup();
-    }
-
-    //set accepted to 0
+    sig_handler_destructor(sigh);
     pthread_mutex_lock(&server_accept_mutex);
     server_accept = 0;
+    delete_all();
     pthread_mutex_unlock(&server_accept_mutex);
+
+    pthread_mutex_lock(&scontrol.server_mutex);
+    while(scontrol.num_client_threads > 0) {
+        pthread_cond_wait(&scontrol.server_cond, &scontrol.server_mutex); 
+    } 
+    pthread_mutex_unlock(&scontrol.server_mutex); 
+    db_cleanup();
+    pthread_exit((void *) 0);
 
     return 0;
 }
