@@ -341,7 +341,7 @@ int main(int argc, char *argv[]) {
     //     printf("sig_ign error");
     // } //this is wrong i think
 
-    start_listener(atoi(argv[1]), client_constructor);
+    pthread_t listener = start_listener(atoi(argv[1]), client_constructor);
 
     // while(1) {
     //     size_t MAX = 1024;
@@ -397,7 +397,6 @@ int main(int argc, char *argv[]) {
 
         if (!strcmp(bufz, "s")) { 
             printf("stopped\n");
-            //client_control_wait();
             client_control_stop();
         } else if (!strcmp(bufz, "g")) {
             printf("resumed\n");
@@ -421,6 +420,10 @@ int main(int argc, char *argv[]) {
     } 
     pthread_mutex_unlock(&scontrol.server_mutex); 
     db_cleanup();
+
+    pthread_cancel(listener);
+    pthread_join(listener, 0);
+    
     pthread_exit((void *) 0);
 
     return 0;
