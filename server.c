@@ -220,6 +220,9 @@ void delete_all() {
     // TODO: Cancel every thread in the client thread list with the
     // pthread_cancel function.
     client_t *cur = thread_list_head;
+    if (cur == NULL) {
+        return;
+    }
     do { 
         int err; 
         if ((err = pthread_cancel(cur->thread)) != 0) {
@@ -286,8 +289,10 @@ void *monitor_signal(void *arg) {
     while(1) {
         if (sigwait(set, &sig) == 0) {
             if (sig == SIGINT) {
-                printf("sigint received");
+                printf("sigint received\n");
+                ptrhead_mutex_lock(&thread_list_mutex);
                 delete_all(); //lcok thread list 
+                ptrhead_mutex_unlock(&thread_list_mutex);
             }
         } else { 
             //error check
@@ -396,11 +401,9 @@ int main(int argc, char *argv[]) {
 
 /*
 issues:
- - seg fault for sigint
+ - sigint not doing anything 
  - stop, wait, resume check
 
  questions:
-  - need to cleanup and everything at end of main too? 
   - when to call client_control_wait? 
-  - print, stop, go statments? 
 */
