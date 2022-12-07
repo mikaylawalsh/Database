@@ -354,24 +354,22 @@ int main(int argc, char *argv[]) {
     char buffer[MAX];
     memset(buffer, 0, MAX);
     while (read(0, buffer, MAX) > 0) {
-        fprintf(stderr, "%s", buffer);
-        if (buffer != NULL) {
-            char bufz[1];
-            char file[512];
-            memset(file, 0, 512);
-            sscanf(buffer, "%s %s", bufz, file);
+        fprintf(stderr, "%d", strlen(buffer); 
+        char bufz[1];
+        char file[512];
+        memset(file, 0, 512);
+        sscanf(buffer, "%s %s", bufz, file);
 
-            if (!strcmp(bufz, "s")) { 
-                client_control_stop();
-                printf("stopped\n");
-            } else if (!strcmp(bufz, "g")) {
-                client_control_release();
-                printf("resumed\n");
-            } else if (!strcmp(bufz, "p")) {
-                db_print(file);
-            } else {
-                fprintf(stderr, "syntax error: please enter either s, g, or p\n");
-            }
+        if (!strcmp(bufz, "s")) { 
+            client_control_stop();
+            printf("stopped\n");
+        } else if (!strcmp(bufz, "g")) {
+            client_control_release();
+            printf("resumed\n");
+        } else if (!strcmp(bufz, "p")) {
+            db_print(file);
+        } else {
+            fprintf(stderr, "syntax error: please enter either s, g, or p\n");
         }
     }
     sig_handler_destructor(sigh);
