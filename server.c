@@ -83,7 +83,7 @@ void client_control_wait() {
     // client_control_release(). See the client_control_t struct.
     pthread_mutex_lock(&ccontrol.go_mutex);
     pthread_cleanup_push((void *) pthread_mutex_unlock, &ccontrol.go_mutex);
-    while (ccontrol.stopped == 1) {
+    while (ccontrol.stopped == 0) {
         pthread_cond_wait(&ccontrol.go, &ccontrol.go_mutex); //when to lock
     }
     pthread_cleanup_pop(1);
