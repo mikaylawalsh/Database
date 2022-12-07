@@ -243,19 +243,21 @@ void thread_cleanup(void *arg) {
     pthread_mutex_lock(&thread_list_mutex);
     client_t *prev = c->prev;
     client_t *next = c->next;
-    if (prev != NULL && next != NULL) {
-        next->prev = prev;
-        prev->next = next;
-        c->prev = NULL;
-        c->next = NULL;
-        if (thread_list_head == c) {
-            thread_list_head = next;
-        }
-    } else {
-        c->prev = NULL;
-        c->next = NULL;
-        thread_list_head = NULL; 
-    }
+    next->prev = prev;
+    prev->next = next;
+    // if (prev != NULL && next != NULL) {
+    //     next->prev = prev;
+    //     prev->next = next;
+    //     c->prev = NULL;
+    //     c->next = NULL;
+    //     if (thread_list_head == c) {
+    //         thread_list_head = next;
+    //     }
+    // } else {
+    //     c->prev = NULL;
+    //     c->next = NULL;
+    //     thread_list_head = NULL; 
+    // }
     pthread_mutex_unlock(&thread_list_mutex);
 
     //decrement 
