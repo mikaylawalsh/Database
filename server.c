@@ -289,7 +289,7 @@ void *monitor_signal(void *arg) {
     while(1) {
         if (sigwait(set, &sig) == 0) {
             if (sig == SIGINT) {
-                printf("sigint received\n");
+                printf(" sigint received. terminating all clients.\n");
                 pthread_mutex_lock(&thread_list_mutex);
                 delete_all(); //lcok thread list 
                 pthread_mutex_unlock(&thread_list_mutex);
