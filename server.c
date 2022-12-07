@@ -354,7 +354,7 @@ int main(int argc, char *argv[]) {
     char buffer[MAX];
     memset(buffer, 0, MAX);
     while (read(0, buffer, MAX) > 0) {
-        fprintf(stderr, "%d", strlen(buffer); 
+        fprintf(stderr, "%ld", strlen(buffer)); 
         char bufz[1];
         char file[512];
         memset(file, 0, 512);
