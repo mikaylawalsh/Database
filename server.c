@@ -148,28 +148,6 @@ void client_destructor(client_t *client) {
 
     comm_shutdown(client->cxstr);
 
-    pthread_mutex_lock(&thread_list_mutex);
-    client_t *prev = client->prev;
-    client_t *next = client->next;
-    if (prev != NULL && next != NULL) {
-        next->prev = prev;
-        prev->next = next;
-        client->prev = NULL;
-        client->next = NULL;
-        if (thread_list_head == client) {
-            thread_list_head = next;
-        }
-    } else {
-        client->prev = NULL;
-        client->next = NULL;
-        thread_list_head = NULL; 
-    }
-    pthread_mutex_unlock(&thread_list_mutex);
-
-    pthread_mutex_lock(&scontrol.server_mutex);
-    scontrol.num_client_threads--; 
-    pthread_mutex_unlock(&scontrol.server_mutex);
-
     free(client);
 }
 
@@ -252,14 +230,35 @@ void thread_cleanup(void *arg) {
 
     client_t *c = (client_t *) arg;
 
-    //make thread safe
+    //remove 
+    pthread_mutex_lock(&thread_list_mutex);
+    client_t *prev = client->prev;
+    client_t *next = client->next;
+    if (prev != NULL && next != NULL) {
+        next->prev = prev;
+        prev->next = next;
+        client->prev = NULL;
+        client->next = NULL;
+        if (thread_list_head == client) {
+            thread_list_head = next;
+        }
+    } else {
+        client->prev = NULL;
+        client->next = NULL;
+        thread_list_head = NULL; 
+    }
+    pthread_mutex_unlock(&thread_list_mutex);
 
-    client_destructor(c);
+    //decrement 
+    pthread_mutex_lock(&scontrol.server_mutex);
+    scontrol.num_client_threads--; 
+    pthread_mutex_unlock(&scontrol.server_mutex);
 
     //check if this is the last client 
     if (scontrol.num_client_threads == 0) {
         pthread_cond_signal(&scontrol.server_cond);
     }
+    client_destructor(c);
 }
 
 // Code executed by the signal handler thread. For the purpose of this
