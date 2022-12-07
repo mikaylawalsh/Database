@@ -222,7 +222,7 @@ void delete_all() {
     // TODO: Cancel every thread in the client thread list with the
     // pthread_cancel function.
     client_t *cur = thread_list_head;
-    fprintf(stderr, "%d", scontrol.num_client_threads);
+    fprintf(stderr, "%d", (cur == NULL));
     if (cur == NULL) {
         return;
     }
