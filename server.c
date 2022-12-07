@@ -388,7 +388,7 @@ int main(int argc, char *argv[]) {
     pthread_cancel(listener);
     pthread_join(listener, 0);
 
-    printf("exiting database");
+    printf("exiting database\n");
     pthread_exit((void *) 0);
 
     return 0;
