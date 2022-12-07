@@ -222,13 +222,13 @@ void delete_all() {
     // TODO: Cancel every thread in the client thread list with the
     // pthread_cancel function.
     client_t *cur = thread_list_head;
+    fprintf(stderr, "%d", scontrol.num_client_threads);
     if (cur == NULL) {
         return;
     }
     do { 
         int err; 
-        fprintf(stderr, "%s", "1");
-        if ((err = pthread_cancel(cur->thread)) != 0) {
+        if ((err = pthread_cancel(cur->thread)) != 0) { //this is the one
             handle_error_en(err, "pthread cancel"); 
         }
         cur = cur->next;
@@ -317,7 +317,6 @@ sig_handler_t *sig_handler_constructor() {
 void sig_handler_destructor(sig_handler_t *sighandler) {
     // TODO: Free any resources allocated in sig_handler_constructor.
     // Cancel and join with the signal handler's thread. 
-    fprintf(stderr, "%s", "2");
     pthread_cancel(sighandler->thread); //error check 
     pthread_join(sighandler->thread, 0); //use 0? 
     free(sighandler);
@@ -388,7 +387,6 @@ int main(int argc, char *argv[]) {
     pthread_mutex_unlock(&scontrol.server_mutex); 
     db_cleanup();
 
-    fprintf(stderr, "%s", "3");
     pthread_cancel(listener);
     pthread_join(listener, 0);
 
