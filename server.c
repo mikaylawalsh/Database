@@ -241,24 +241,15 @@ void thread_cleanup(void *arg) {
     client_t *c = (client_t *) arg;
 
     //remove 
-    pthread_mutex_lock(&thread_list_mutex);
-    client_t *prev = c->prev;
-    client_t *next = c->next;
-    next->prev = prev;
-    prev->next = next;
-    // if (prev != NULL && next != NULL) {
-    //     next->prev = prev;
-    //     prev->next = next;
-    //     c->prev = NULL;
-    //     c->next = NULL;
-    //     if (thread_list_head == c) {
-    //         thread_list_head = next;
-    //     }
-    // } else {
-    //     c->prev = NULL;
-    //     c->next = NULL;
-    //     thread_list_head = NULL; 
-    // }
+    pthread_mutex_lock(&thread_list_mutex); //already locked? 
+    if (c->prev == c && c->next == c && c == thread_list_head) {
+        thread_list_head = 0;
+    } else {
+        client_t *prev = c->prev;
+        client_t *next = c->next;
+        next->prev = prev;
+        prev->next = next;
+    }
     pthread_mutex_unlock(&thread_list_mutex);
 
     //decrement 
@@ -287,11 +278,15 @@ void *monitor_signal(void *arg) {
     set = (sigset_t *) arg;
     int sig;
     while(1) {
+        if (num_client_threads == 0) {
+            printf(" sigint received. no clients to terminate.\n");
+            return;
+        }
         if (sigwait(set, &sig) == 0) {
             if (sig == SIGINT) {
                 printf(" sigint received. terminating all clients.\n");
                 pthread_mutex_lock(&thread_list_mutex);
-                delete_all(); //lcok thread list 
+                delete_all();
                 pthread_mutex_unlock(&thread_list_mutex);
             }
         } else { 
