@@ -360,11 +360,11 @@ int main(int argc, char *argv[]) {
         sscanf(buffer, "%s %s", bufz, file);
 
         if (!strcmp(bufz, "s")) { 
-            printf("stopped\n");
             client_control_stop();
+            printf("stopped\n");
         } else if (!strcmp(bufz, "g")) {
-            printf("resumed\n");
             client_control_release();
+            printf("resumed\n");
         } else if (!strcmp(bufz, "p")) {
             db_print(file);
         } else {
