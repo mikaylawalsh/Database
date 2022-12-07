@@ -230,7 +230,7 @@ void delete_all() {
     // TODO: Cancel every thread in the client thread list with the
     // pthread_cancel function.
     client_t *cur = thread_list_head;
-    if (cur == NULL && scontrol.num_client_threads == 0) {
+    if (scontrol.num_client_threads == 0) {
         pthread_cond_signal(&scontrol.server_cond);
     }
     do { 
@@ -328,11 +328,16 @@ int main(int argc, char *argv[]) {
     // thread to add itself to the thread list after the server's final
     // delete_all().
 
+    sigset_t set;
+    sigemptyset(&set);
+    sigaddset(&set, SIGPIPE);
+    pthread_sigmask(SIG_BLOCK, &set, 0);
+
     sig_handler_t *sigh = sig_handler_constructor();
 
-    if (signal(SIGPIPE, SIG_BLOCK) == SIG_ERR) {
-        printf("sig_ign error");
-    } //this is wrong i think 
+    // if (signal(SIGPIPE, SIG_BLOCK) == SIG_ERR) {
+    //     printf("sig_ign error");
+    // } //this is wrong i think
 
     start_listener(atoi(argv[1]), client_constructor);
 
