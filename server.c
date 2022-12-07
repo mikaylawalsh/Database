@@ -97,6 +97,7 @@ void client_control_stop() {
     pthread_mutex_lock(&ccontrol.go_mutex);
     ccontrol.stopped = 1;
     pthread_mutex_unlock(&ccontrol.go_mutex);
+    printf("stopped\n");
     client_control_wait();
 }
 
@@ -363,7 +364,6 @@ int main(int argc, char *argv[]) {
 
             if (!strcmp(bufz, "s")) { 
                 client_control_stop();
-                printf("stopped\n");
             } else if (!strcmp(bufz, "g")) {
                 client_control_release();
                 printf("resumed\n");
