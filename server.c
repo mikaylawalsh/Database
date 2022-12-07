@@ -290,9 +290,9 @@ void *monitor_signal(void *arg) {
         if (sigwait(set, &sig) == 0) {
             if (sig == SIGINT) {
                 printf("sigint received\n");
-                ptrhead_mutex_lock(&thread_list_mutex);
+                pthread_mutex_lock(&thread_list_mutex);
                 delete_all(); //lcok thread list 
-                ptrhead_mutex_unlock(&thread_list_mutex);
+                pthread_mutex_unlock(&thread_list_mutex);
             }
         } else { 
             //error check
