@@ -276,6 +276,7 @@ void *monitor_signal(void *arg) {
     while(1) {
         if (sigwait(set, &sig) == 0) {
             if (sig == SIGINT) {
+                printf("sigint received");
                 delete_all(); //lcok thread list 
                 return NULL;
             }
@@ -395,10 +396,7 @@ int main(int argc, char *argv[]) {
 /*
 issues:
  - seg fault for clt-D 
- - seg fault for sigint (need to "catch" sigint)
- - seg fault when client disconnects or exits 
-
- - seg fault for db_print 
+ - seg fault for sigint
  - stop, wait, resume check
 
  questions:
