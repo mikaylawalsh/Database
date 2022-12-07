@@ -97,6 +97,7 @@ void client_control_stop() {
     pthread_mutex_lock(&ccontrol.go_mutex);
     ccontrol.stopped = 1;
     pthread_mutex_unlock(&ccontrol.go_mutex);
+    client_control_wait();
 }
 
 // Called by main thread to resume client threads
