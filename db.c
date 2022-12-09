@@ -11,7 +11,7 @@
 // The root node of the binary tree, unlike all
 // other nodes in the tree, this one is never
 // freed (it's allocated in the data region).
-node_t head = {"", "", 0, 0};
+node_t head = {"", "", 0, 0}; //initalize? 
 
 // pthread_rwlock_t tree_lock = PTHREAD_RWLOCK_INITIALIZER; //way to make this apply to tree
 
@@ -96,7 +96,7 @@ int db_add(char *name, char *value) {
     }
 
     newnode = node_constructor(name, value, 0, 0);
-
+    //lock new node? 
     if (strcmp(name, parent->name) < 0)
         parent->lchild = newnode;
     else

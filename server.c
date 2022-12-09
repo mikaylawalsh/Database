@@ -251,6 +251,9 @@ void thread_cleanup(void *arg) {
         client_t *next = c->next;
         next->prev = prev;
         prev->next = next;
+        if (thread_list_head == c) {
+            thread_list_head = next;
+        }
     }
     pthread_mutex_unlock(&thread_list_mutex);
 
@@ -375,15 +378,18 @@ int main(int argc, char *argv[]) {
     }
     sig_handler_destructor(sigh);
     pthread_mutex_lock(&server_accept_mutex);
+    pthread_mutex_lock(&thread_list_mutex);
     server_accept = 0;
     delete_all();
     pthread_mutex_unlock(&server_accept_mutex);
+    pthread_mutex_unlock(&thread_list_mutex);
 
     pthread_mutex_lock(&scontrol.server_mutex);
     while(scontrol.num_client_threads > 0) {
         pthread_cond_wait(&scontrol.server_cond, &scontrol.server_mutex); 
     } 
     pthread_mutex_unlock(&scontrol.server_mutex); 
+
     db_cleanup();
 
     pthread_cancel(listener);
@@ -397,8 +403,7 @@ int main(int argc, char *argv[]) {
 
 /*
 issues:
- - pthead cancel: no such process
 
  questions:
-  - when to call client_control_wait? 
+  - locking server_accept ??
 */
