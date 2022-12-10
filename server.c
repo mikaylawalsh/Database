@@ -81,10 +81,13 @@ void thread_cleanup(void *arg);
 void client_control_wait() {
     // TODO: Block the calling thread until the main thread calls
     // client_control_release(). See the client_control_t struct.
+    int err;
     pthread_mutex_lock(&ccontrol.go_mutex);
     pthread_cleanup_push((void *) pthread_mutex_unlock, &ccontrol.go_mutex);
     while (ccontrol.stopped == 1) {
-        pthread_cond_wait(&ccontrol.go, &ccontrol.go_mutex); //when to lock
+        if ((err = pthread_cond_wait(&ccontrol.go, &ccontrol.go_mutex)) != 0) {
+            handle_error_en(err, "pthread cond wait");    
+        }
     }
     pthread_cleanup_pop(1);
 }
@@ -108,7 +111,10 @@ void client_control_release() {
     //need to lock? 
     pthread_mutex_lock(&ccontrol.go_mutex);
     ccontrol.stopped = 0;
-    pthread_cond_broadcast(&ccontrol.go);
+    int err;
+    if ((err = pthread_cond_broadcast(&ccontrol.go)) != 0) {
+            handle_error_en(err, "pthread cond broadcast");    
+        }
     pthread_mutex_unlock(&ccontrol.go_mutex);
 }
 
@@ -127,6 +133,7 @@ void client_constructor(FILE *cxstr) {
     client_t *c;
     if ((c = (client_t *) malloc(sizeof(client_t))) == NULL) {
         printf("malloc error");
+        return;
     } 
     
     int err;
@@ -137,6 +144,7 @@ void client_constructor(FILE *cxstr) {
     c->cxstr = cxstr;
     c->prev = NULL;
     c->next = NULL;
+    int err;
     if ((err = pthread_detach(c->thread)) != 0) {
         handle_error_en(err, "pthread detach");    
     }
@@ -148,7 +156,6 @@ void client_destructor(client_t *client) {
     // be freed here!
 
     comm_shutdown(client->cxstr);
-
     free(client);
 }
 
@@ -264,7 +271,9 @@ void thread_cleanup(void *arg) {
 
     //check if this is the last client 
     if (scontrol.num_client_threads == 0) {
-        pthread_cond_signal(&scontrol.server_cond);
+        if ((err = pthread_cond_signal(&scontrol.server_cond)) != 0) {
+            handle_error_en(err, "pthread cond signal");    
+        }
     }
     client_destructor(c);
 }
@@ -296,6 +305,7 @@ void *monitor_signal(void *arg) {
             }
         } else { 
             //error check
+            printf("sigwait failed");
         }
     }
     return NULL;
@@ -307,20 +317,40 @@ sig_handler_t *sig_handler_constructor() {
 
     sig_handler_t *sigint_handler;
     sigint_handler = malloc(sizeof(sig_handler_t));
+    if (sigint_handler == NULL) {
+        printf("malloc error");
+        return;
+    }
 
-    sigemptyset(&sigint_handler->set);
-    sigaddset(&sigint_handler->set, SIGINT);
-    pthread_sigmask(SIG_BLOCK, &sigint_handler->set, 0);
-    pthread_create(&sigint_handler->thread, 0, monitor_signal, &sigint_handler->set); //error check 
-
+    if (sigemptyset(&sigint_handler->set) == -1) {
+        printf("sigemptyset failed");
+        return;
+    }
+    if (sigaddset(&sigint_handler->set, SIGINT) == -1) {
+        printf("sigaddyset failed");
+        return;
+    }
+    if (pthread_sigmask(SIG_BLOCK, &sigint_handler->set, 0) != 0) { //not in pthread library
+        printf("pthread_sigmask failed");
+        return;
+    }
+    int err;
+    if ((err = pthread_create(&sigint_handler->thread, 0, monitor_signal, &sigint_handler->set)) != 0) {
+        handle_error_en(err, "pthread create");    
+    } 
     return sigint_handler;
 }
 
 void sig_handler_destructor(sig_handler_t *sighandler) {
     // TODO: Free any resources allocated in sig_handler_constructor.
     // Cancel and join with the signal handler's thread. 
-    pthread_cancel(sighandler->thread); //error check 
-    pthread_join(sighandler->thread, 0); //use 0? 
+    int err;
+    if ((err = pthread_cancel(sighandler->thread)) != 0) {
+        handle_error_en(err, "pthread cancel");    
+    }
+    if ((err = pthread_join(sighandler->thread, 0)) != 0) {
+        handle_error_en(err, "pthread join");    
+    }
     free(sighandler);
 }
 
@@ -342,9 +372,18 @@ int main(int argc, char *argv[]) {
     // delete_all().
 
     sigset_t set;
-    sigemptyset(&set);
-    sigaddset(&set, SIGPIPE);
-    pthread_sigmask(SIG_BLOCK, &set, 0);
+    if (sigemptyset(&set) == -1) {
+        printf("sigemptyset failed");
+        return 1;
+    }
+    if (sigaddset(&set, SIGPIPE) == -1) {
+        printf("sigaddset failed");
+        return 1;
+    }
+    if (pthread_sigmask(SIG_BLOCK, &set, 0) != 0) {
+        printf("pthread_sigmask failed");
+        return 1;
+    }
 
     sig_handler_t *sigh = sig_handler_constructor();
 
@@ -385,15 +424,22 @@ int main(int argc, char *argv[]) {
     pthread_mutex_unlock(&thread_list_mutex);
 
     pthread_mutex_lock(&scontrol.server_mutex);
-    while(scontrol.num_client_threads > 0) {
-        pthread_cond_wait(&scontrol.server_cond, &scontrol.server_mutex); 
+    int err;
+    while(scontrol.num_client_threads > 0) { 
+        if ((err = pthread_cond_wait(&scontrol.server_cond, &scontrol.server_mutex)) != 0) {
+            handle_error_en(err, "pthread cond wait"); 
+        }
     } 
     pthread_mutex_unlock(&scontrol.server_mutex); 
 
     db_cleanup();
 
-    pthread_cancel(listener);
-    pthread_join(listener, 0);
+    if ((err = pthread_cancel(listener)) != 0) {
+        handle_error_en(err, "pthread cancel"); 
+    }
+    if ((err = pthread_join(listener, 0)) != 0) {
+        handle_error_en(err, "pthread join"); 
+    }
 
     printf("exiting database\n");
     pthread_exit((void *) 0);
