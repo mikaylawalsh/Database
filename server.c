@@ -144,7 +144,6 @@ void client_constructor(FILE *cxstr) {
     c->cxstr = cxstr;
     c->prev = NULL;
     c->next = NULL;
-    int err;
     if ((err = pthread_detach(c->thread)) != 0) {
         handle_error_en(err, "pthread detach");    
     }
@@ -268,7 +267,7 @@ void thread_cleanup(void *arg) {
     pthread_mutex_lock(&scontrol.server_mutex);
     scontrol.num_client_threads--; 
     pthread_mutex_unlock(&scontrol.server_mutex);
-
+    int err;
     //check if this is the last client 
     if (scontrol.num_client_threads == 0) {
         if ((err = pthread_cond_signal(&scontrol.server_cond)) != 0) {
@@ -319,20 +318,20 @@ sig_handler_t *sig_handler_constructor() {
     sigint_handler = malloc(sizeof(sig_handler_t));
     if (sigint_handler == NULL) {
         printf("malloc error");
-        return;
+        return NULL;
     }
 
     if (sigemptyset(&sigint_handler->set) == -1) {
         printf("sigemptyset failed");
-        return;
+        return NULL;
     }
     if (sigaddset(&sigint_handler->set, SIGINT) == -1) {
         printf("sigaddyset failed");
-        return;
+        return NULL;
     }
     if (pthread_sigmask(SIG_BLOCK, &sigint_handler->set, 0) != 0) { //not in pthread library
         printf("pthread_sigmask failed");
-        return;
+        return NULL;
     }
     int err;
     if ((err = pthread_create(&sigint_handler->thread, 0, monitor_signal, &sigint_handler->set)) != 0) {
