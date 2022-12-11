@@ -193,6 +193,7 @@ void *run_client(void *arg) {
             thread_list_head = c;
             c->prev = old->prev;
             c->next = old;
+            old->prev->next = c;
             old->prev = c;   
         }
         pthread_mutex_unlock(&thread_list_mutex);
