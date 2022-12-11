@@ -296,10 +296,10 @@ void *monitor_signal(void *arg) {
                 if (scontrol.num_client_threads == 0) {
                     printf(" sigint received. no clients to terminate.\n");
                 } else {
-                    printf(" sigint received. terminating all clients.\n");
                     pthread_mutex_lock(&thread_list_mutex);
                     delete_all();
                     pthread_mutex_unlock(&thread_list_mutex);
+                    printf(" sigint received. terminating all clients.\n");
                 }
             }
         } else { 
@@ -320,13 +320,12 @@ sig_handler_t *sig_handler_constructor() {
         printf("malloc error\n");
         return NULL;
     }
-
     if (sigemptyset(&sigint_handler->set) == -1) {
         printf("sigemptyset failed\n");
         return NULL;
     }
     if (sigaddset(&sigint_handler->set, SIGINT) == -1) {
-        printf("sigaddyset failed\n");
+        printf("sigaddset failed\n");
         return NULL;
     }
     if (pthread_sigmask(SIG_BLOCK, &sigint_handler->set, 0) != 0) { //not in pthread library
