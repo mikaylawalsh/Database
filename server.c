@@ -15,7 +15,6 @@
 #include "./db.h"
 
 int server_accept = 1; //make thread safe! lock before altering 
-pthread_mutex_t server_accept_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /*
  * Use the variables in this struct to synchronize your main thread with client
@@ -370,6 +369,11 @@ int main(int argc, char *argv[]) {
     // thread to add itself to the thread list after the server's final
     // delete_all().
 
+    if (argc != 2) {
+        printf("correct usage: ./server [port]\n");
+        return 1;
+    }
+
     sigset_t set;
     if (sigemptyset(&set) == -1) {
         printf("sigemptyset failed\n");
@@ -411,11 +415,9 @@ int main(int argc, char *argv[]) {
         }
     }
     sig_handler_destructor(sigh);
-    pthread_mutex_lock(&server_accept_mutex);
     pthread_mutex_lock(&thread_list_mutex);
     server_accept = 0;
     delete_all();
-    pthread_mutex_unlock(&server_accept_mutex);
     pthread_mutex_unlock(&thread_list_mutex);
 
     pthread_mutex_lock(&scontrol.server_mutex);
