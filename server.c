@@ -132,7 +132,7 @@ void client_constructor(FILE *cxstr) {
     
     client_t *c;
     if ((c = (client_t *) malloc(sizeof(client_t))) == NULL) {
-        printf("malloc error");
+        printf("malloc error\n");
         return;
     } 
     
@@ -304,7 +304,7 @@ void *monitor_signal(void *arg) {
             }
         } else { 
             //error check
-            printf("sigwait failed");
+            printf("sigwait failed\n");
         }
     }
     return NULL;
@@ -317,20 +317,20 @@ sig_handler_t *sig_handler_constructor() {
     sig_handler_t *sigint_handler;
     sigint_handler = malloc(sizeof(sig_handler_t));
     if (sigint_handler == NULL) {
-        printf("malloc error");
+        printf("malloc error\n");
         return NULL;
     }
 
     if (sigemptyset(&sigint_handler->set) == -1) {
-        printf("sigemptyset failed");
+        printf("sigemptyset failed\n");
         return NULL;
     }
     if (sigaddset(&sigint_handler->set, SIGINT) == -1) {
-        printf("sigaddyset failed");
+        printf("sigaddyset failed\n");
         return NULL;
     }
     if (pthread_sigmask(SIG_BLOCK, &sigint_handler->set, 0) != 0) { //not in pthread library
-        printf("pthread_sigmask failed");
+        printf("pthread_sigmask failed\n");
         return NULL;
     }
     int err;
@@ -372,23 +372,19 @@ int main(int argc, char *argv[]) {
 
     sigset_t set;
     if (sigemptyset(&set) == -1) {
-        printf("sigemptyset failed");
+        printf("sigemptyset failed\n");
         return 1;
     }
     if (sigaddset(&set, SIGPIPE) == -1) {
-        printf("sigaddset failed");
+        printf("sigaddset failed\n");
         return 1;
     }
     if (pthread_sigmask(SIG_BLOCK, &set, 0) != 0) {
-        printf("pthread_sigmask failed");
+        printf("pthread_sigmask failed\n");
         return 1;
     }
 
     sig_handler_t *sigh = sig_handler_constructor();
-
-    // if (signal(SIGPIPE, SIG_BLOCK) == SIG_ERR) {
-    //     printf("sig_ign error");
-    // } //this is wrong i think
 
     pthread_t listener = start_listener(atoi(argv[1]), client_constructor);
 
