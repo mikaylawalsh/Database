@@ -80,6 +80,7 @@ void thread_cleanup(void *arg);
 void client_control_wait() {
     // TODO: Block the calling thread until the main thread calls
     // client_control_release(). See the client_control_t struct.
+    printf("entered client control wait\n");
     int err;
     pthread_mutex_lock(&ccontrol.go_mutex);
     pthread_cleanup_push((void *) pthread_mutex_unlock, &ccontrol.go_mutex);
@@ -95,17 +96,19 @@ void client_control_wait() {
 void client_control_stop() {
     // TODO: Ensure that the next time client threads call client_control_wait()
     // at the top of the event loop in run_client, they will block.
+    printf("entered client control stop\n");
 
     pthread_mutex_lock(&ccontrol.go_mutex);
     ccontrol.stopped = 1;
     pthread_mutex_unlock(&ccontrol.go_mutex);
-    printf("stopped\n");
+    printf("stopping all clients\n");
 }
 
 // Called by main thread to resume client threads
 void client_control_release() {
     // TODO: Allow clients that are blocked within client_control_wait()
     // to continue. See the client_control_t struct.
+    printf("entered client control release\n");
 
     //need to lock? 
     pthread_mutex_lock(&ccontrol.go_mutex);
@@ -128,6 +131,7 @@ void client_constructor(FILE *cxstr) {
     // to the input argument.
     // Step 2: Create the new client thread running the run_client routine.
     // Step 3: Detach the new client thread
+    printf("entered client constructor\n");
     
     client_t *c;
     if ((c = (client_t *) malloc(sizeof(client_t))) == NULL) {
@@ -152,6 +156,7 @@ void client_destructor(client_t *client) {
     // TODO: Free and close all resources associated with a client.
     // Whatever was malloc'd in client_constructor should
     // be freed here!
+    printf("entered client destructor\n");
 
     comm_shutdown(client->cxstr);
     free(client);
@@ -170,6 +175,7 @@ void *run_client(void *arg) {
     //       cleanly.
     //
     // You will need to modify this when implementing functionality for stop and go!
+    printf("entered run client\n");
 
     //make sure server is still accepting clients
     client_t *c = (client_t *) arg;
@@ -227,6 +233,7 @@ void *run_client(void *arg) {
 void delete_all() {
     // TODO: Cancel every thread in the client thread list with the
     // pthread_cancel function.
+    printf("entered delete_all\n");
     client_t *cur = thread_list_head;
     if (scontrol.num_client_threads == 0) {
         return;
@@ -245,6 +252,7 @@ void thread_cleanup(void *arg) {
     // TODO: Remove the client object from thread list and call
     // client_destructor. This function must be thread safe! The client must
     // be in the list before this routine is ever run.
+    printf("entered thread_cleanup\n");
 
     client_t *c = (client_t *) arg;
 
@@ -287,6 +295,7 @@ void thread_cleanup(void *arg) {
 void *monitor_signal(void *arg) {
     // TODO: Wait for a SIGINT to be sent to the server process and cancel
     // all client threads when one arrives.
+    printf("entered monitor signal\n");
     sigset_t *set;
     set = (sigset_t *) arg;
     int sig;
@@ -294,12 +303,12 @@ void *monitor_signal(void *arg) {
         if (sigwait(set, &sig) == 0) {
             if (sig == SIGINT) {
                 if (scontrol.num_client_threads == 0) {
-                    printf(" sigint received. no clients to terminate.\n");
+                    printf(" sigint received. no clients to cancel.\n");
                 } else {
                     pthread_mutex_lock(&thread_list_mutex);
                     delete_all();
                     pthread_mutex_unlock(&thread_list_mutex);
-                    printf(" sigint received. terminating all clients.\n");
+                    printf(" sigint received. canceling all clients.\n");
                 }
             }
         } else { 
@@ -313,6 +322,7 @@ void *monitor_signal(void *arg) {
 sig_handler_t *sig_handler_constructor() {
     // TODO: Create a thread to handle SIGINT. The thread that this function
     // creates should be the ONLY thread that ever responds to SIGINT.
+    printf("entered sig handler constructor\n");
 
     sig_handler_t *sigint_handler;
     sigint_handler = malloc(sizeof(sig_handler_t));
@@ -342,6 +352,7 @@ sig_handler_t *sig_handler_constructor() {
 void sig_handler_destructor(sig_handler_t *sighandler) {
     // TODO: Free any resources allocated in sig_handler_constructor.
     // Cancel and join with the signal handler's thread. 
+    printf("entered sig handler destructor\n");
     int err;
     if ((err = pthread_cancel(sighandler->thread)) != 0) {
         handle_error_en(err, "pthread cancel");    
@@ -406,7 +417,7 @@ int main(int argc, char *argv[]) {
                 client_control_stop();
             } else if (!strcmp(bufz, "g")) {
                 client_control_release();
-                printf("resumed\n");
+                printf("releasing all clients\n");
             } else if (!strcmp(bufz, "p")) {
                 db_print(file);
             } else {
@@ -443,10 +454,3 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
-
-/*
-issues:
-
- questions:
-  - locking server_accept ??
-*/
