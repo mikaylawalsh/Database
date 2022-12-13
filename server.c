@@ -80,9 +80,7 @@ void thread_cleanup(void *arg);
 void client_control_wait() {
     // TODO: Block the calling thread until the main thread calls
     // client_control_release(). See the client_control_t struct.
-    fprintf(stderr, "entered client control wait\n");
     int err;
-    fprintf(stderr, "%d %d", 1, ccontrol == NULL);
     pthread_mutex_lock(&ccontrol.go_mutex);
     pthread_cleanup_push((void *) pthread_mutex_unlock, &ccontrol.go_mutex);
     while (ccontrol.stopped == 1) {
