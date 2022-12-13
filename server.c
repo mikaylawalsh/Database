@@ -156,7 +156,7 @@ void client_destructor(client_t *client) {
     // TODO: Free and close all resources associated with a client.
     // Whatever was malloc'd in client_constructor should
     // be freed here!
-    fprintf(sdterr, "entered client destructor\n");
+    fprintf(stderr, "entered client destructor\n");
 
     comm_shutdown(client->cxstr);
     free(client);
