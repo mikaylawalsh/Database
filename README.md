@@ -1,8 +1,8 @@
 # Database
-Overall structure of your code:
+Overall structure of your code: All of the functions pertaining to the functioning of the server is contained in the server.c file and all functions relating to the functionality of the database is in db.c. In server.c, the main function allows the server to interact with a user, containing a REPL to accept the commands s, g, and p. The server also handles certain signals and changes their effect on the server. SIGPIPE is ignored for the entire time the server is running and SIGINT's purpose is changed to cancel all clients currently connected to the server. EOF is also adjusted to exit the server all together. This code is multithread safe by using mutex locks. In db.c, the commands inputted to the server or client REPL are carried out by calling db_add, db_remove, db_query, or db_print. All of these functions are also multithread safe using fine-grained locking.
 
-Helper functions and what they do:
+Helper functions and what they do: I didn't create any additional helper functions in server.c. Everything is done in full in each of the functions, calling other functions whose headers were given with the stencil code. In db.c, I added a helper function, lock, which takes in a lock type and and the thing to lock. This locks the thing to lock using the lock type passed in (either a read lock or a write lock). I only use this function in search, since search has a lock type passed in. 
+ 
+Changes to any function signatures: The only function signature I changed was search in db.c and db.h. I added an arguement lt, which is a lock type enum (either a read lock or a write lock). I added this when implementing the fine-grained locking. 
 
-Changes to any function signatures:
-
-Unresolved bugs:
+Unresolved bugs: The only current unresolved bug is a seg fault that doesn't happen very often. Every once in a while I get a seg fault, but then if I run the same commands 10x again I will not get the seg fault. This makes it very difficult to locate where the issue is since it doesn't happen every time. 
