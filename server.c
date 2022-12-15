@@ -82,13 +82,18 @@ void client_control_wait() {
     // client_control_release(). See the client_control_t struct.
     int err;
     pthread_mutex_lock(&ccontrol.go_mutex);
+    fprintf(stderr, "1");
     pthread_cleanup_push((void *) pthread_mutex_unlock, &ccontrol.go_mutex);
+    fprintf(stderr, "2");
     while (ccontrol.stopped == 1) {
         if ((err = pthread_cond_wait(&ccontrol.go, &ccontrol.go_mutex)) != 0) {
-            handle_error_en(err, "pthread cond wait");    
+            fprintf(stderr, "3");
+            handle_error_en(err, "pthread cond wait");
+            fprintf(stderr, "4");    
         }
     }
     pthread_cleanup_pop(1);
+    fprintf(stderr, "5");
 }
 
 // Called by main thread to stop client threads
