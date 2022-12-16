@@ -5,4 +5,4 @@ Helper functions and what they do: I didn't create any additional helper functio
 
 Changes to any function signatures: The only function signature I changed was search in db.c and db.h. I added an arguement lt, which is a lock type enum (either a read lock or a write lock). I added this when implementing the fine-grained locking. 
 
-Unresolved bugs: The only current unresolved bug is a seg fault that doesn't happen very often. Every once in a while I get a seg fault, but then if I run the same commands 10x again I will not get the seg fault. This makes it very difficult to locate where the issue is since it doesn't happen every time. 
+Unresolved bugs: None.  

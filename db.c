@@ -61,7 +61,6 @@ node_t *node_constructor(char *arg_name, char *arg_value, node_t *arg_left,
 
     new_node->lchild = arg_left;
     new_node->rchild = arg_right;
-    int err;
     pthread_rwlock_init(&new_node->lock, NULL);
     return new_node;
 }
@@ -78,7 +77,7 @@ void node_destructor(node_t *node) {
 }
 
 /*
-db_query:
+db_query: looks for the node in the tree with the specified name if it is there
 parameters: the name of the argument to search for, the string to put the result in,
 and the length of the result array
 returns: nothing
@@ -249,8 +248,8 @@ node_t *search(char *name, node_t *parent, node_t **parentpp, enum locktype lt) 
 }
 
 /*
-print_spaces: 
-parameters: 
+print_spaces: prints the spaces for the tree 
+parameters: the level of the tree and the file to print to
 returns: nothing
 */
 static inline void print_spaces(int lvl, FILE *out) {
@@ -259,7 +258,11 @@ static inline void print_spaces(int lvl, FILE *out) {
     }
 }
 
-/* helper function for db_print */
+/*
+db_print_recurs: steps through the tree recursively and prints as it goes
+parameters: the current node, the level we are at, and the file to print to
+returns: nothing
+*/
 void db_print_recurs(node_t *node, int lvl, FILE *out) {
     // print spaces to differentiate levels
     print_spaces(lvl, out);
@@ -280,6 +283,11 @@ void db_print_recurs(node_t *node, int lvl, FILE *out) {
     pthread_rwlock_unlock(&node->lock);
 }
 
+/*
+db_print: prints the tree 
+parameters: the file to print to 
+returns: int indicting an error or no error
+*/
 int db_print(char *filename) {
     FILE *out;
     if (filename == NULL) {
@@ -307,7 +315,11 @@ int db_print(char *filename) {
     return 0;
 }
 
-/* Recursively destroys node and all its children. */
+/*
+db_cleanup_recurs: steps through the tree recursively, deleting nodes as it goes
+parameters: the current node
+returns: nothing
+*/
 void db_cleanup_recurs(node_t *node) {
     if (node == NULL) {
         return;
@@ -319,12 +331,23 @@ void db_cleanup_recurs(node_t *node) {
     node_destructor(node);
 }
 
-
+/*
+db_cleanup: deletes the entire tree
+parameters: nothing
+returns: nothing
+*/
 void db_cleanup() {
     db_cleanup_recurs(head.lchild);
     db_cleanup_recurs(head.rchild);
 }
 
+/*
+interpret_command: interprets the command in the command string, handles it be performing
+the command, and puts a response in the response string
+parameters: the string that contains a command, the string to put a response, and 
+the length of the response 
+returns: nothing
+*/
 void interpret_command(char *command, char *response, int len) {
     char value[MAXLEN];
     char ibuf[MAXLEN];
