@@ -11,12 +11,20 @@
 // The root node of the binary tree, unlike all
 // other nodes in the tree, this one is never
 // freed (it's allocated in the data region).
-node_t head = {"", "", 0, 0}; //initalize? 
+node_t head = {"", "", 0, 0};
 
-// pthread_rwlock_t tree_lock = PTHREAD_RWLOCK_INITIALIZER; //way to make this apply to tree
-
+/*
+lock: locks the lk using the specified lock type (either read or write)
+parameters: lt, a lock type, and lk, the lock
+returns: nothing
+*/
 #define lock(lt, lk) (((lt) == l_read)? pthread_rwlock_rdlock(lk): pthread_rwlock_wrlock(lk))
 
+/*
+node_constructor: 
+parameters: the argument name, value, and the right and left child
+returns: a pointer to the new node 
+*/
 node_t *node_constructor(char *arg_name, char *arg_value, node_t *arg_left,
                          node_t *arg_right) {
     size_t name_len = strlen(arg_name);
@@ -53,37 +61,52 @@ node_t *node_constructor(char *arg_name, char *arg_value, node_t *arg_left,
 
     new_node->lchild = arg_left;
     new_node->rchild = arg_right;
-    pthread_rwlock_init(&new_node->lock, NULL); //erro chekc 
+    int err;
+    if ((err = pthread_rwlock_init(&new_node->lock, NULL)) != 0) {
+        handle_error_en(err, "pthread rwlock init");
+    } 
     return new_node;
 }
 
+/*
+node_destructor: frees the node struct 
+parameters: the node to destroy
+returns: nothing
+*/
 void node_destructor(node_t *node) {
     if (node->name != 0) free(node->name);
     if (node->value != 0) free(node->value);
     free(node);
 }
 
+/*
+db_query:
+parameters: the name of the argument to search for, the string to put the result in,
+and the length of the result array
+returns: nothing
+*/
 void db_query(char *name, char *result, int len) {
-    // TODO: Make this thread-safe!
     pthread_rwlock_rdlock(&head.lock);
     node_t *target;
     target = search(name, &head, 0, l_read);
 
     if (target == 0) {
         snprintf(result, len, "not found");
-        //pthread_rwlock_unlock(&head.lock); //correct? 
         return;
     } else {
         snprintf(result, len, "%s", target->value);
         pthread_rwlock_unlock(&target->lock);
-        //pthread_rwlock_unlock(&head.lock);
 
         return;
     }
 }
 
+/*
+db_add: adds a new node to the tree with the provided name and value 
+parameters: the name and value to add to the tree
+returns: an int
+*/
 int db_add(char *name, char *value) {
-    // TODO: Make this thread-safe!
     node_t *parent;
     node_t *target;
     node_t *newnode;
@@ -96,7 +119,6 @@ int db_add(char *name, char *value) {
     }
 
     newnode = node_constructor(name, value, 0, 0);
-    //lock new node? 
     if (strcmp(name, parent->name) < 0)
         parent->lchild = newnode;
     else
@@ -105,8 +127,12 @@ int db_add(char *name, char *value) {
     return (1);
 }
 
+/*
+db_remove: removes the node with the given name from the tree if it is there 
+parameters: the name of the node to remove
+returns: an int 
+*/
 int db_remove(char *name) {
-    // TODO: Make this thread-safe!
     node_t *parent;
     node_t *dnode;
     node_t *next;
@@ -125,7 +151,6 @@ int db_remove(char *name) {
     // right child, then we can merely replace its parent's pointer to
     // it with the node's left child.
 
-    //pthread_rwlock_wrlock(&parent->lock);
     if (dnode->rchild == 0) {
         if (strcmp(dnode->name, parent->name) < 0)
             parent->lchild = dnode->lchild;
@@ -181,6 +206,13 @@ int db_remove(char *name) {
     return (1);
 }
 
+/*
+search: searches for a node with the given name in the tree and if it is found it is returned 
+and its parent is put in the parent argument 
+parameters: the name of the node to find, the parent of that node, the pointer to the parent, 
+and the lock type to use
+returns: a pointer to the node if it is found
+*/
 node_t *search(char *name, node_t *parent, node_t **parentpp, enum locktype lt) {
     // Search the tree, starting at parent, for a node containing
     // name (the "target node").  Return a pointer to the node,
@@ -189,8 +221,6 @@ node_t *search(char *name, node_t *parent, node_t **parentpp, enum locktype lt) 
     // is stored.  If the target node is not found, the location pointed to
     // by parentpp is set to what would be the the address of the parent of
     // the target node, if it were there.
-    //
-    // TODO: Make this thread-safe!
 
     node_t *next;
     node_t *result;
@@ -220,6 +250,11 @@ node_t *search(char *name, node_t *parent, node_t **parentpp, enum locktype lt) 
     return result;
 }
 
+/*
+print_spaces: 
+parameters: 
+returns: nothing
+*/
 static inline void print_spaces(int lvl, FILE *out) {
     for (int i = 0; i < lvl; i++) {
         fprintf(out, " ");
@@ -228,7 +263,6 @@ static inline void print_spaces(int lvl, FILE *out) {
 
 /* helper function for db_print */
 void db_print_recurs(node_t *node, int lvl, FILE *out) {
-    //TODO: Make this thread-safe!
     // print spaces to differentiate levels
     print_spaces(lvl, out);
     // print out the current node
